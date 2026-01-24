@@ -1,4 +1,7 @@
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGear } from '@fortawesome/free-solid-svg-icons'
+import AdminPage from './pages/AdminPage'
 import TasksPage from './pages/TasksPage'
 import UsersPage from './pages/UsersPage'
 import './App.css'
@@ -26,6 +29,15 @@ function App() {
             >
               Usuarios
             </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `nav-link ${isActive ? 'active' : ''}`
+              }
+              to="/admin"
+            >
+              <FontAwesomeIcon icon={faGear} className="me-2" />
+              Admin
+            </NavLink>
           </div>
         </div>
       </nav>
@@ -35,6 +47,7 @@ function App() {
           <Route path="/" element={<Navigate to="/tasks" replace />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
     </div>

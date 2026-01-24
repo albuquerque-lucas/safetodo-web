@@ -5,12 +5,13 @@ export type TaskCreateInput = {
   user?: number
   title: string
   description?: string | null
-  status?: TaskStatus
   due_date?: string | null
-  priority?: number
+  priority_level?: number | null
 }
 
-export type TaskUpdateInput = Partial<TaskCreateInput>
+export type TaskUpdateInput = Partial<TaskCreateInput> & {
+  status?: TaskStatus
+}
 
 type PaginatedResponse<T> = {
   count: number

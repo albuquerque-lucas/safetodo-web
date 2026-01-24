@@ -2,6 +2,16 @@ export type Timestamp = string
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
 
+export type PriorityLevel = {
+  id: number
+  level: number
+  name: string
+  description: string | null
+  is_active: boolean
+  created_at: Timestamp
+  updated_at: Timestamp
+}
+
 export type User = {
   id: number
   username: string
@@ -22,7 +32,8 @@ export type Task = {
   description: string | null
   status: TaskStatus
   due_date: Timestamp | null
-  priority: number
+  priority_level: number | null
+  priority_level_display: string | null
   created_at: Timestamp
   updated_at: Timestamp
 }
