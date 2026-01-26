@@ -31,7 +31,7 @@ export const confirmDeletion = async (text: string): Promise<boolean> => {
     text,
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonColor: '#212529',
+    confirmButtonColor: '#dc3545',
     cancelButtonColor: '#6c757d',
     confirmButtonText: 'Sim, excluir',
     cancelButtonText: 'Cancelar',

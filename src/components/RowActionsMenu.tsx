@@ -22,6 +22,7 @@ const RowActionsMenu = ({
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
   const [menuPosition, setMenuPosition] = useState<{
     top: number
     right: number
@@ -35,7 +36,10 @@ const RowActionsMenu = ({
       if (!containerRef.current) {
         return
       }
-      if (!containerRef.current.contains(event.target as Node)) {
+      const targetNode = event.target as Node
+      const clickedInsideButton = containerRef.current.contains(targetNode)
+      const clickedInsideMenu = menuRef.current?.contains(targetNode) ?? false
+      if (!clickedInsideButton && !clickedInsideMenu) {
         setIsOpen(false)
       }
     }
@@ -82,6 +86,7 @@ const RowActionsMenu = ({
         ? createPortal(
             <div
               className="dropdown-menu show"
+              ref={menuRef}
               style={{
                 position: 'fixed',
                 top: menuPosition.top,
