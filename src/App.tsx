@@ -1,55 +1,21 @@
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGear } from '@fortawesome/free-solid-svg-icons'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import AdminPage from './pages/AdminPage'
 import TasksPage from './pages/TasksPage'
 import UsersPage from './pages/UsersPage'
+import SidebarLayout from './components/SidebarLayout'
 import './App.css'
 
 function App() {
   return (
     <div className="app-shell">
-      <nav className="navbar navbar-light bg-white border-bottom">
-        <div className="container d-flex flex-column flex-md-row align-items-md-center gap-3">
-          <span className="navbar-brand fw-semibold mb-0">Tasks Django</span>
-          <div className="nav nav-pills ms-md-auto">
-            <NavLink
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'active' : ''}`
-              }
-              to="/tasks"
-            >
-              Tasks
-            </NavLink>
-            <NavLink
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'active' : ''}`
-              }
-              to="/users"
-            >
-              Usuarios
-            </NavLink>
-            <NavLink
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'active' : ''}`
-              }
-              to="/admin"
-            >
-              <FontAwesomeIcon icon={faGear} className="me-2" />
-              Admin
-            </NavLink>
-          </div>
-        </div>
-      </nav>
-
-      <main className="container py-4">
+      <SidebarLayout title="Tasks Django">
         <Routes>
           <Route path="/" element={<Navigate to="/tasks" replace />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
-      </main>
+      </SidebarLayout>
     </div>
   )
 }
