@@ -13,6 +13,8 @@ import AppModal from '../components/AppModal'
 import DataTable from '../components/DataTable'
 import NewItemButton from '../components/NewItemButton'
 import RowActionsMenu from '../components/RowActionsMenu'
+import TaskStatusBadge from '../components/TaskStatusBadge'
+import { STATUS_LABELS } from '../utils/taskStatus'
 import { confirmDeletion } from '../utils/swalMessages'
 
 type TaskCreateFormState = {
@@ -41,10 +43,10 @@ const defaultEditForm: TaskEditFormState = {
 }
 
 const statusOptions: { value: TaskStatus; label: string }[] = [
-  { value: 'pending', label: 'Pendente' },
-  { value: 'in_progress', label: 'Em progresso' },
-  { value: 'completed', label: 'Concluida' },
-  { value: 'cancelled', label: 'Cancelada' },
+  { value: 'pending', label: STATUS_LABELS.pending },
+  { value: 'in_progress', label: STATUS_LABELS.in_progress },
+  { value: 'completed', label: STATUS_LABELS.completed },
+  { value: 'cancelled', label: STATUS_LABELS.cancelled },
 ]
 
 const toNumberOrUndefined = (value: string) =>
@@ -201,7 +203,12 @@ const TasksPage = () => {
           columns={[
             { header: 'ID', render: (task) => task.id },
             { header: 'Titulo', render: (task) => task.title },
-            { header: 'Status', render: (task) => task.status },
+            {
+              header: 'Status',
+              render: (task) => (
+                <TaskStatusBadge status={task.status} dueDate={task.due_date} />
+              ),
+            },
             { header: 'Usuario', render: (task) => task.user_display },
             {
               header: 'Prioridade',
@@ -279,27 +286,48 @@ const TasksPage = () => {
         ) : taskQuery.isError ? (
           <div className="text-danger">Erro ao carregar tarefa.</div>
         ) : modalMode === 'view' && taskQuery.data ? (
-          <dl className="row mb-0">
-            <dt className="col-sm-3">Titulo</dt>
-            <dd className="col-sm-9">{taskQuery.data.title}</dd>
-            <dt className="col-sm-3">Descricao</dt>
-            <dd className="col-sm-9">{taskQuery.data.description || '-'}</dd>
-            <dt className="col-sm-3">Status</dt>
-            <dd className="col-sm-9">{taskQuery.data.status}</dd>
-            <dt className="col-sm-3">Usuario</dt>
-            <dd className="col-sm-9">{taskQuery.data.user_display}</dd>
-            <dt className="col-sm-3">Prioridade</dt>
-            <dd className="col-sm-9">
-              {taskQuery.data.priority_level_display ?? '-'}
-            </dd>
-            <dt className="col-sm-3">Vencimento</dt>
-            <dd className="col-sm-9">{formatDate(taskQuery.data.due_date)}</dd>
-          </dl>
+          <div className="task-details">
+            <div className="task-details-row">
+              <span className="task-details-label">Titulo</span>
+              <span className="task-details-value">{taskQuery.data.title}</span>
+            </div>
+            <div className="task-details-row">
+              <span className="task-details-label">Status</span>
+              <TaskStatusBadge
+                status={taskQuery.data.status}
+                dueDate={taskQuery.data.due_date}
+              />
+            </div>
+            <div className="task-details-row">
+              <span className="task-details-label">Usuario</span>
+              <span className="task-details-value">
+                {taskQuery.data.user_display}
+              </span>
+            </div>
+            <div className="task-details-row">
+              <span className="task-details-label">Prioridade</span>
+              <span className="task-details-value">
+                {taskQuery.data.priority_level_display ?? '-'}
+              </span>
+            </div>
+            <div className="task-details-row">
+              <span className="task-details-label">Vencimento</span>
+              <span className="task-details-value">
+                {formatDate(taskQuery.data.due_date)}
+              </span>
+            </div>
+            <div className="task-details-row task-details-row--full">
+              <span className="task-details-label">Descricao</span>
+              <div className="task-details-value task-details-description">
+                {taskQuery.data.description?.trim() || '-'}
+              </div>
+            </div>
+          </div>
         ) : (
           <form id="task-edit-form" onSubmit={handleEditSubmit}>
             <div className="row g-3">
-              <div className="col-12 col-md-6">
-                <label className="form-label">Titulo</label>
+              <div className="col-12">
+                <label className="form-label fw-semibold">Titulo</label>
                 <input
                   className="form-control"
                   value={editForm.title}
@@ -309,21 +337,8 @@ const TasksPage = () => {
                   required
                 />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Descricao</label>
-                <input
-                  className="form-control"
-                  value={editForm.description}
-                  onChange={(event) =>
-                    setEditForm({
-                      ...editForm,
-                      description: event.target.value,
-                    })
-                  }
-                />
-              </div>
               <div className="col-6 col-md-4">
-                <label className="form-label">Status</label>
+                <label className="form-label fw-semibold">Status</label>
                 <select
                   className="form-select"
                   value={editForm.status}
@@ -341,33 +356,35 @@ const TasksPage = () => {
                   ))}
                 </select>
               </div>
-            <div className="col-6 col-md-4">
-              <label className="form-label">Prioridade</label>
-              <select
-                className="form-select"
-                value={editForm.priority_level}
-                onChange={(event) =>
-                  setEditForm({
-                    ...editForm,
-                    priority_level: event.target.value,
-                  })
-                }
-                disabled={priorityLevelsQuery.isLoading}
-              >
-                <option value="">
-                  {priorityLevelsQuery.isLoading
-                    ? 'Carregando niveis...'
-                    : 'Sem prioridade'}
-                </option>
-                {priorityLevels.map((priorityLevel) => (
-                  <option key={priorityLevel.id} value={priorityLevel.id}>
-                    {priorityLevel.level} - {priorityLevel.name}
+              <div className="col-6 col-md-4">
+                <label className="form-label fw-semibold">Prioridade</label>
+                <select
+                  className="form-select"
+                  value={editForm.priority_level}
+                  onChange={(event) =>
+                    setEditForm({
+                      ...editForm,
+                      priority_level: event.target.value,
+                    })
+                  }
+                  disabled={priorityLevelsQuery.isLoading}
+                >
+                  <option value="">
+                    {priorityLevelsQuery.isLoading
+                      ? 'Carregando niveis...'
+                      : 'Sem prioridade'}
                   </option>
-                ))}
-              </select>
-            </div>
+                  {priorityLevels.map((priorityLevel) => (
+                    <option key={priorityLevel.id} value={priorityLevel.id}>
+                      {priorityLevel.level} - {priorityLevel.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="col-12 col-md-4">
-                <label className="form-label">Data de vencimento</label>
+                <label className="form-label fw-semibold">
+                  Data de vencimento
+                </label>
                 <input
                   className="form-control"
                   type="datetime-local"
@@ -381,7 +398,7 @@ const TasksPage = () => {
                 />
               </div>
               <div className="col-12 col-md-4">
-                <label className="form-label">Usuario (ID)</label>
+                <label className="form-label fw-semibold">Usuario (ID)</label>
                 <input
                   className="form-control"
                   type="number"
@@ -390,6 +407,20 @@ const TasksPage = () => {
                   onChange={(event) =>
                     setEditForm({ ...editForm, user: event.target.value })
                   }
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label fw-semibold">Descricao</label>
+                <textarea
+                  className="form-control task-description-input"
+                  value={editForm.description}
+                  onChange={(event) =>
+                    setEditForm({
+                      ...editForm,
+                      description: event.target.value,
+                    })
+                  }
+                  rows={4}
                 />
               </div>
             </div>
@@ -426,8 +457,8 @@ const TasksPage = () => {
       >
         <form id="task-create-form" onSubmit={handleCreateSubmit}>
           <div className="row g-3">
-            <div className="col-12 col-md-6">
-              <label className="form-label">Titulo</label>
+            <div className="col-12">
+              <label className="form-label fw-semibold">Titulo</label>
               <input
                 className="form-control"
                 value={createForm.title}
@@ -437,21 +468,8 @@ const TasksPage = () => {
                 required
               />
             </div>
-            <div className="col-12 col-md-6">
-              <label className="form-label">Descricao</label>
-              <input
-                className="form-control"
-                value={createForm.description}
-                onChange={(event) =>
-                  setCreateForm({
-                    ...createForm,
-                    description: event.target.value,
-                  })
-                }
-              />
-            </div>
             <div className="col-6 col-md-4">
-              <label className="form-label">Prioridade</label>
+              <label className="form-label fw-semibold">Prioridade</label>
               <select
                 className="form-select"
                 value={createForm.priority_level}
@@ -476,7 +494,7 @@ const TasksPage = () => {
               </select>
             </div>
             <div className="col-12 col-md-4">
-              <label className="form-label">Data de vencimento</label>
+              <label className="form-label fw-semibold">Data de vencimento</label>
               <input
                 className="form-control"
                 type="datetime-local"
@@ -490,7 +508,7 @@ const TasksPage = () => {
               />
             </div>
             <div className="col-12 col-md-4">
-              <label className="form-label">Usuario (ID)</label>
+              <label className="form-label fw-semibold">Usuario (ID)</label>
               <input
                 className="form-control"
                 type="number"
@@ -499,6 +517,20 @@ const TasksPage = () => {
                 onChange={(event) =>
                   setCreateForm({ ...createForm, user: event.target.value })
                 }
+              />
+            </div>
+            <div className="col-12">
+              <label className="form-label fw-semibold">Descricao</label>
+              <textarea
+                className="form-control task-description-input"
+                value={createForm.description}
+                onChange={(event) =>
+                  setCreateForm({
+                    ...createForm,
+                    description: event.target.value,
+                  })
+                }
+                rows={4}
               />
             </div>
           </div>

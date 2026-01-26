@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { motion } from 'framer-motion'
 import {
   faBars,
   faGear,
@@ -32,7 +33,20 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
       </header>
 
       <div className={`app-layout ${isSidebarOpen ? 'is-open' : ''}`}>
-        <aside className="sidebar" aria-label="Menu lateral">
+        <motion.aside
+          className="sidebar"
+          aria-label="Menu lateral"
+          initial={false}
+          animate={{
+            width: isSidebarOpen ? 220 : 72,
+            transition: {
+              type: 'spring',
+              stiffness: 240,
+              damping: 26,
+              delay: isSidebarOpen ? 0 : 0.12
+            }
+          }}
+        >
           <nav className="sidebar-nav">
             <NavLink
               className={({ isActive }) =>
@@ -43,7 +57,22 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               <span className="sidebar-icon">
                 <FontAwesomeIcon icon={faListCheck} />
               </span>
-              <span className="sidebar-text">Tasks</span>
+              <motion.span
+                className="sidebar-text"
+                initial={false}
+                animate={isSidebarOpen ? 'open' : 'closed'}
+                variants={{
+                  open: { opacity: 1, x: 0, maxWidth: 160 },
+                  closed: { opacity: 0, x: 8, maxWidth: 0 }
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.18,
+                  delay: isSidebarOpen ? 0.08 : 0
+                }}
+              >
+                Tasks
+              </motion.span>
             </NavLink>
             <NavLink
               className={({ isActive }) =>
@@ -54,7 +83,22 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               <span className="sidebar-icon">
                 <FontAwesomeIcon icon={faUsers} />
               </span>
-              <span className="sidebar-text">Usuarios</span>
+              <motion.span
+                className="sidebar-text"
+                initial={false}
+                animate={isSidebarOpen ? 'open' : 'closed'}
+                variants={{
+                  open: { opacity: 1, x: 0, maxWidth: 160 },
+                  closed: { opacity: 0, x: 8, maxWidth: 0 }
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.18,
+                  delay: isSidebarOpen ? 0.08 : 0
+                }}
+              >
+                Usuarios
+              </motion.span>
             </NavLink>
             <NavLink
               className={({ isActive }) =>
@@ -65,10 +109,25 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               <span className="sidebar-icon">
                 <FontAwesomeIcon icon={faGear} />
               </span>
-              <span className="sidebar-text">Admin</span>
+              <motion.span
+                className="sidebar-text"
+                initial={false}
+                animate={isSidebarOpen ? 'open' : 'closed'}
+                variants={{
+                  open: { opacity: 1, x: 0, maxWidth: 160 },
+                  closed: { opacity: 0, x: 8, maxWidth: 0 }
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.18,
+                  delay: isSidebarOpen ? 0.08 : 0
+                }}
+              >
+                Admin
+              </motion.span>
             </NavLink>
           </nav>
-        </aside>
+        </motion.aside>
 
         <main className="main-content">{children}</main>
       </div>
