@@ -24,6 +24,18 @@ export type User = {
   last_login?: Timestamp | null
 }
 
+export type AuditLog = {
+  id: number
+  user: number
+  action: string
+  entity_type: string
+  entity_id: string
+  metadata: Record<string, unknown>
+  timestamp: Timestamp
+  ip: string | null
+  user_agent: string
+}
+
 export type Task = {
   id: number
   user: number

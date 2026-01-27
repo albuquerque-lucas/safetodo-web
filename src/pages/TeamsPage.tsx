@@ -143,6 +143,7 @@ const TeamsPage = () => {
     mutationFn: createTeam,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setCreateForm(defaultCreateForm)
       setIsCreateOpen(false)
     },
@@ -161,6 +162,7 @@ const TeamsPage = () => {
       if (selectedTeamId) {
         queryClient.invalidateQueries({ queryKey: ['team', selectedTeamId] })
       }
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setModalMode(null)
       setSelectedTeamId(null)
     },
@@ -170,6 +172,7 @@ const TeamsPage = () => {
     mutationFn: deleteTeam,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
     },
   })
 
@@ -178,6 +181,7 @@ const TeamsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-tasks', selectedTeamId] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setIsTeamTaskCreateOpen(false)
       setTeamTaskForm({
         title: '',

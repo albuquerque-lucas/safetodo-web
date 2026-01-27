@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import {
   createUser,
   deleteUser,
@@ -48,14 +49,15 @@ const defaultEditForm: UserEditFormState = {
 
 const UsersPage = () => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [createForm, setCreateForm] = useState<UserCreateFormState>(
     defaultCreateForm,
   )
   const [editForm, setEditForm] =
     useState<UserEditFormState>(defaultEditForm)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
-  const [modalMode, setModalMode] = useState<'view' | 'edit' | null>(null)
 
   const usersQuery = useQuery({
     queryKey: ['users'],
@@ -65,11 +67,11 @@ const UsersPage = () => {
   const userQuery = useQuery({
     queryKey: ['user', selectedUserId],
     queryFn: () => getUser(selectedUserId as number),
-    enabled: selectedUserId !== null,
+    enabled: selectedUserId !== null && isEditOpen,
   })
 
   useEffect(() => {
-    if (modalMode === 'edit' && userQuery.data) {
+    if (isEditOpen && userQuery.data) {
       const user = userQuery.data
       setEditForm({
         username: user.username ?? '',
@@ -80,12 +82,13 @@ const UsersPage = () => {
         phone: user.phone ?? '',
       })
     }
-  }, [modalMode, userQuery.data])
+  }, [isEditOpen, userQuery.data])
 
   const createMutation = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setCreateForm(defaultCreateForm)
       setIsCreateOpen(false)
     },
@@ -104,7 +107,8 @@ const UsersPage = () => {
       if (selectedUserId) {
         queryClient.invalidateQueries({ queryKey: ['user', selectedUserId] })
       }
-      setModalMode(null)
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
+      setIsEditOpen(false)
       setSelectedUserId(null)
     },
   })
@@ -113,6 +117,7 @@ const UsersPage = () => {
     mutationFn: deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
     },
   })
 
@@ -148,13 +153,13 @@ const UsersPage = () => {
     })
   }
 
-  const openModal = (id: number, mode: 'view' | 'edit') => {
+  const openEditModal = (id: number) => {
     setSelectedUserId(id)
-    setModalMode(mode)
+    setIsEditOpen(true)
   }
 
-  const closeModal = () => {
-    setModalMode(null)
+  const closeEditModal = () => {
+    setIsEditOpen(false)
     setSelectedUserId(null)
   }
 
@@ -204,11 +209,11 @@ const UsersPage = () => {
                   items={[
                     {
                       label: 'Visualizar',
-                      onClick: () => openModal(user.id, 'view'),
+                      onClick: () => navigate(`/app/users/${user.id}`),
                     },
                     {
                       label: 'Editar',
-                      onClick: () => openModal(user.id, 'edit'),
+                      onClick: () => openEditModal(user.id),
                     },
                     {
                       label: 'Deletar',
@@ -228,60 +233,33 @@ const UsersPage = () => {
       )}
 
       <AppModal
-        isOpen={modalMode !== null && selectedUserId !== null}
-        title={modalMode === 'view' ? 'Detalhes do usuario' : 'Editar usuario'}
-        onClose={closeModal}
+        isOpen={isEditOpen && selectedUserId !== null}
+        title="Editar usuario"
+        onClose={closeEditModal}
         footer={
-          modalMode === 'edit' ? (
-            <>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={closeModal}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn btn-dark"
-                form="user-edit-form"
-                disabled={updateMutation.isPending}
-              >
-                {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
-              </button>
-            </>
-          ) : (
+          <>
             <button
               type="button"
               className="btn btn-outline-secondary"
-              onClick={closeModal}
+              onClick={closeEditModal}
             >
-              Fechar
+              Cancelar
             </button>
-          )
+            <button
+              type="submit"
+              className="btn btn-dark"
+              form="user-edit-form"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
+            </button>
+          </>
         }
       >
         {userQuery.isLoading ? (
           <div className="text-muted">Carregando detalhes...</div>
         ) : userQuery.isError ? (
           <div className="text-danger">Erro ao carregar usuario.</div>
-        ) : modalMode === 'view' && userQuery.data ? (
-          <dl className="row mb-0">
-            <dt className="col-sm-3">Username</dt>
-            <dd className="col-sm-9">{userQuery.data.username}</dd>
-            <dt className="col-sm-3">Email</dt>
-            <dd className="col-sm-9">{userQuery.data.email}</dd>
-            <dt className="col-sm-3">Nome</dt>
-            <dd className="col-sm-9">
-              {[userQuery.data.first_name, userQuery.data.last_name]
-                .filter(Boolean)
-                .join(' ') || '-'}
-            </dd>
-            <dt className="col-sm-3">Bio</dt>
-            <dd className="col-sm-9">{userQuery.data.bio || '-'}</dd>
-            <dt className="col-sm-3">Telefone</dt>
-            <dd className="col-sm-9">{userQuery.data.phone || '-'}</dd>
-          </dl>
         ) : (
           <form id="user-edit-form" onSubmit={handleEditSubmit}>
             <div className="row g-3">

@@ -9,7 +9,8 @@ import {
   faHouse,
   faPeopleGroup,
   faRightFromBracket,
-  faUsers
+  faUsers,
+  faUser
 } from '@fortawesome/free-solid-svg-icons'
 import apiClient from '../lib/apiClient'
 
@@ -128,6 +129,32 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
                 }}
               >
                 Tasks
+              </motion.span>
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? 'active' : ''}`
+              }
+              to="/app/profile"
+            >
+              <span className="sidebar-icon">
+                <FontAwesomeIcon icon={faUser} />
+              </span>
+              <motion.span
+                className="sidebar-text"
+                initial={false}
+                animate={isSidebarOpen ? 'open' : 'closed'}
+                variants={{
+                  open: { opacity: 1, x: 0, maxWidth: 160 },
+                  closed: { opacity: 0, x: 8, maxWidth: 0 }
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.18,
+                  delay: isSidebarOpen ? 0.08 : 0
+                }}
+              >
+                Perfil
               </motion.span>
             </NavLink>
             <NavLink

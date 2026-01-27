@@ -38,6 +38,11 @@ export const getUser = async (id: number) => {
   return data
 }
 
+export const getCurrentUser = async () => {
+  const { data } = await apiClient.get<User>('/users/me/')
+  return data
+}
+
 export const createUser = async (payload: UserCreateInput) => {
   const { data } = await apiClient.post<User>('/users/', payload)
   return data

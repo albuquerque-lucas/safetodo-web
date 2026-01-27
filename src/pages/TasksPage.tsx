@@ -167,6 +167,7 @@ const TasksPage = () => {
     mutationFn: createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setCreateForm(defaultCreateForm)
       setIsCreateOpen(false)
     },
@@ -185,6 +186,7 @@ const TasksPage = () => {
       if (selectedTaskId) {
         queryClient.invalidateQueries({ queryKey: ['task', selectedTaskId] })
       }
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setModalMode(null)
       setSelectedTaskId(null)
     },
@@ -194,6 +196,7 @@ const TasksPage = () => {
     mutationFn: deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
     },
   })
 

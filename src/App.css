@@ -145,6 +145,127 @@
   box-shadow: 0 20px 45px -40px rgba(15, 23, 42, 0.8);
 }
 
+.profile-page {
+  display: grid;
+  gap: 24px;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.profile-body {
+  display: grid;
+  gap: 20px;
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: #111827;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-chip {
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.profile-label {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.profile-value {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.profile-bio {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.profile-tabs {
+  margin: 0;
+}
+
+.profile-tabs .nav-link {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.profile-tabs .nav-link.active {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.profile-logs {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-logs-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-logs-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
 .home-panel {
   min-height: calc(100vh - 64px - 48px);
   background: #ffffff;
@@ -436,6 +557,24 @@
 }
 
 @media (min-width: 768px) {
+  .profile-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .profile-logs-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .profile-logs-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .admin-header {
     flex-direction: row;
     align-items: center;
