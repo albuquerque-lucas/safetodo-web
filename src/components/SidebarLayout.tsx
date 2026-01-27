@@ -1,21 +1,43 @@
 import { ReactNode, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { motion } from 'framer-motion'
 import {
   faBars,
   faGear,
   faListCheck,
+  faHouse,
+  faPeopleGroup,
+  faRightFromBracket,
   faUsers
 } from '@fortawesome/free-solid-svg-icons'
+import apiClient from '../lib/apiClient'
 
 type SidebarLayoutProps = {
   title: string
-  children: ReactNode
+  children?: ReactNode
 }
 
 function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await apiClient.post('/users/logout/')
+    } catch {
+      // No-op: logout pode ser apenas client-side
+    } finally {
+      localStorage.removeItem('token')
+      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('auth_username')
+      localStorage.removeItem('auth_user_id')
+      localStorage.removeItem('auth_role')
+      navigate('/', { replace: true })
+    }
+  }
+
+  const isAdmin = localStorage.getItem('auth_role') === 'super_admin'
 
   return (
     <>
@@ -29,7 +51,14 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
           <FontAwesomeIcon icon={faBars} />
         </button>
         <span className="topbar-title">{title}</span>
-        <div className="topbar-spacer" aria-hidden="true" />
+        <button
+          type="button"
+          className="topbar-logout"
+          aria-label="Sair"
+          onClick={handleLogout}
+        >
+          <FontAwesomeIcon icon={faRightFromBracket} />
+        </button>
       </header>
 
       <div className={`app-layout ${isSidebarOpen ? 'is-open' : ''}`}>
@@ -52,7 +81,34 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
-              to="/tasks"
+              to="/app"
+              end
+            >
+              <span className="sidebar-icon">
+                <FontAwesomeIcon icon={faHouse} />
+              </span>
+              <motion.span
+                className="sidebar-text"
+                initial={false}
+                animate={isSidebarOpen ? 'open' : 'closed'}
+                variants={{
+                  open: { opacity: 1, x: 0, maxWidth: 160 },
+                  closed: { opacity: 0, x: 8, maxWidth: 0 }
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.18,
+                  delay: isSidebarOpen ? 0.08 : 0
+                }}
+              >
+                Home
+              </motion.span>
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? 'active' : ''}`
+              }
+              to="/app/tasks"
             >
               <span className="sidebar-icon">
                 <FontAwesomeIcon icon={faListCheck} />
@@ -78,7 +134,7 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
-              to="/users"
+              to="/app/users"
             >
               <span className="sidebar-icon">
                 <FontAwesomeIcon icon={faUsers} />
@@ -104,10 +160,10 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
-              to="/admin"
+              to="/app/teams"
             >
               <span className="sidebar-icon">
-                <FontAwesomeIcon icon={faGear} />
+                <FontAwesomeIcon icon={faPeopleGroup} />
               </span>
               <motion.span
                 className="sidebar-text"
@@ -123,13 +179,41 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
                   delay: isSidebarOpen ? 0.08 : 0
                 }}
               >
-                Admin
+                Equipes
               </motion.span>
             </NavLink>
+            {isAdmin ? (
+              <NavLink
+                className={({ isActive }) =>
+                  `sidebar-link ${isActive ? 'active' : ''}`
+                }
+                to="/app/admin"
+              >
+                <span className="sidebar-icon">
+                  <FontAwesomeIcon icon={faGear} />
+                </span>
+                <motion.span
+                  className="sidebar-text"
+                  initial={false}
+                  animate={isSidebarOpen ? 'open' : 'closed'}
+                  variants={{
+                    open: { opacity: 1, x: 0, maxWidth: 160 },
+                    closed: { opacity: 0, x: 8, maxWidth: 0 }
+                  }}
+                  transition={{
+                    type: 'tween',
+                    duration: 0.18,
+                    delay: isSidebarOpen ? 0.08 : 0
+                  }}
+                >
+                  Admin
+                </motion.span>
+              </NavLink>
+            ) : null}
           </nav>
         </motion.aside>
 
-        <main className="main-content">{children}</main>
+        <main className="main-content">{children ?? <Outlet />}</main>
       </div>
     </>
   )

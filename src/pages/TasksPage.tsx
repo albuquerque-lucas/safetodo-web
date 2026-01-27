@@ -8,6 +8,8 @@ import {
   updateTask,
 } from '../api/tasks'
 import { getPriorityLevels } from '../api/priorityLevels'
+import { getTeams } from '../api/teams'
+import { getUserChoices } from '../api/users'
 import type { TaskStatus } from '../types/api'
 import AppModal from '../components/AppModal'
 import DataTable from '../components/DataTable'
@@ -23,6 +25,7 @@ type TaskCreateFormState = {
   priority_level: string
   due_date: string
   user: string
+  team: string
 }
 
 type TaskEditFormState = TaskCreateFormState & {
@@ -35,6 +38,7 @@ const defaultCreateForm: TaskCreateFormState = {
   priority_level: '',
   due_date: '',
   user: '',
+  team: '',
 }
 
 const defaultEditForm: TaskEditFormState = {
@@ -60,6 +64,7 @@ const formatDate = (value?: string | null) =>
 
 const TasksPage = () => {
   const queryClient = useQueryClient()
+  const storedUserId = localStorage.getItem('auth_user_id') ?? ''
   const [createForm, setCreateForm] =
     useState<TaskCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TaskEditFormState>(defaultEditForm)
@@ -68,7 +73,7 @@ const TasksPage = () => {
   const [modalMode, setModalMode] = useState<'view' | 'edit' | null>(null)
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['tasks', storedUserId],
     queryFn: getTasks,
   })
 
@@ -77,12 +82,36 @@ const TasksPage = () => {
     queryFn: getPriorityLevels,
   })
 
+  const teamsQuery = useQuery({
+    queryKey: ['teams'],
+    queryFn: getTeams,
+  })
+
+  const activeTeamId =
+    modalMode === 'edit'
+      ? editForm.team
+      : isCreateOpen
+        ? createForm.team
+        : ''
+
+  const userChoicesQuery = useQuery({
+    queryKey: ['user-choices', activeTeamId],
+    queryFn: () =>
+      getUserChoices({
+        teamId: activeTeamId ? Number(activeTeamId) : undefined,
+        pageSize: 200,
+      }),
+    enabled: !!activeTeamId,
+  })
+
   const priorityLevels = (priorityLevelsQuery.data ?? [])
     .slice()
     .sort((leftLevel, rightLevel) => leftLevel.level - rightLevel.level)
 
+  const userChoices = userChoicesQuery.data?.results ?? []
+
   const taskQuery = useQuery({
-    queryKey: ['task', selectedTaskId],
+    queryKey: ['task', selectedTaskId, storedUserId],
     queryFn: () => getTask(selectedTaskId as number),
     enabled: selectedTaskId !== null,
   })
@@ -97,9 +126,42 @@ const TasksPage = () => {
         priority_level: task.priority_level ? String(task.priority_level) : '',
         due_date: task.due_date ? task.due_date.slice(0, 16) : '',
         user: String(task.user ?? ''),
+        team: task.team ? String(task.team) : '',
       })
     }
   }, [modalMode, taskQuery.data])
+
+  useEffect(() => {
+    const teams = teamsQuery.data ?? []
+    if (teams.length === 1) {
+      const teamId = String(teams[0].id)
+      setCreateForm((current) =>
+        current.team ? current : { ...current, team: teamId },
+      )
+      setEditForm((current) =>
+        current.team ? current : { ...current, team: teamId },
+      )
+    }
+  }, [teamsQuery.data])
+
+  useEffect(() => {
+    if (!createForm.user && userChoices.length > 0) {
+      setCreateForm((current) => ({
+        ...current,
+        user: String(userChoices[0].id),
+      }))
+    }
+  }, [createForm.user, userChoices])
+
+  useEffect(() => {
+    if (isCreateOpen) {
+      setCreateForm((current) => ({
+        ...current,
+        user: '',
+      }))
+    }
+  }, [createForm.team, isCreateOpen])
+
 
   const createMutation = useMutation({
     mutationFn: createTask,
@@ -143,6 +205,7 @@ const TasksPage = () => {
       priority_level: toNumberOrUndefined(createForm.priority_level),
       due_date: toIsoOrNull(createForm.due_date),
       user: toNumberOrUndefined(createForm.user),
+      team: toNumberOrUndefined(createForm.team),
     })
   }
 
@@ -160,6 +223,7 @@ const TasksPage = () => {
         priority_level: toNumberOrUndefined(editForm.priority_level),
         due_date: toIsoOrNull(editForm.due_date),
         user: toNumberOrUndefined(editForm.user),
+        team: toNumberOrUndefined(editForm.team),
       },
     })
   }
@@ -210,6 +274,10 @@ const TasksPage = () => {
               ),
             },
             { header: 'Usuario', render: (task) => task.user_display },
+            {
+              header: 'Equipe',
+              render: (task) => task.team_display ?? '-',
+            },
             {
               header: 'Prioridade',
               render: (task) => task.priority_level_display ?? '-',
@@ -302,6 +370,12 @@ const TasksPage = () => {
               <span className="task-details-label">Usuario</span>
               <span className="task-details-value">
                 {taskQuery.data.user_display}
+              </span>
+            </div>
+            <div className="task-details-row">
+              <span className="task-details-label">Equipe</span>
+              <span className="task-details-value">
+                {taskQuery.data.team_display ?? '-'}
               </span>
             </div>
             <div className="task-details-row">
@@ -398,16 +472,52 @@ const TasksPage = () => {
                 />
               </div>
               <div className="col-12 col-md-4">
-                <label className="form-label fw-semibold">Usuario (ID)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  min="1"
+                <label className="form-label fw-semibold">Equipe</label>
+              <select
+                className="form-select"
+                value={editForm.team}
+                onChange={(event) =>
+                  setEditForm({
+                    ...editForm,
+                    team: event.target.value,
+                    user: '',
+                  })
+                }
+                required
+              >
+                  <option value="">
+                    {teamsQuery.isLoading
+                      ? 'Carregando equipes...'
+                      : 'Selecione uma equipe'}
+                  </option>
+                  {(teamsQuery.data ?? []).map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-12 col-md-4">
+                <label className="form-label fw-semibold">Usuario</label>
+                <select
+                  className="form-select"
                   value={editForm.user}
                   onChange={(event) =>
                     setEditForm({ ...editForm, user: event.target.value })
                   }
-                />
+                  disabled={!editForm.team || userChoicesQuery.isLoading}
+                >
+                  <option value="">
+                    {userChoicesQuery.isLoading
+                      ? 'Carregando usuarios...'
+                      : 'Selecione um usuario'}
+                  </option>
+                  {userChoices.map((choice) => (
+                    <option key={choice.id} value={choice.id}>
+                      {choice.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-12">
                 <label className="form-label fw-semibold">Descricao</label>
@@ -494,6 +604,32 @@ const TasksPage = () => {
               </select>
             </div>
             <div className="col-12 col-md-4">
+              <label className="form-label fw-semibold">Equipe</label>
+              <select
+                className="form-select"
+                value={createForm.team}
+                onChange={(event) =>
+                  setCreateForm({
+                    ...createForm,
+                    team: event.target.value,
+                    user: '',
+                  })
+                }
+                required
+              >
+                <option value="">
+                  {teamsQuery.isLoading
+                    ? 'Carregando equipes...'
+                    : 'Selecione uma equipe'}
+                </option>
+                {(teamsQuery.data ?? []).map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-12 col-md-4">
               <label className="form-label fw-semibold">Data de vencimento</label>
               <input
                 className="form-control"
@@ -508,16 +644,26 @@ const TasksPage = () => {
               />
             </div>
             <div className="col-12 col-md-4">
-              <label className="form-label fw-semibold">Usuario (ID)</label>
-              <input
-                className="form-control"
-                type="number"
-                min="1"
+              <label className="form-label fw-semibold">Usuario</label>
+              <select
+                className="form-select"
                 value={createForm.user}
                 onChange={(event) =>
                   setCreateForm({ ...createForm, user: event.target.value })
                 }
-              />
+                disabled={!createForm.team || userChoicesQuery.isLoading}
+              >
+                <option value="">
+                  {userChoicesQuery.isLoading
+                    ? 'Carregando usuarios...'
+                    : 'Selecione um usuario'}
+                </option>
+                {userChoices.map((choice) => (
+                  <option key={choice.id} value={choice.id}>
+                    {choice.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="col-12">
               <label className="form-label fw-semibold">Descricao</label>

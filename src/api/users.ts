@@ -16,6 +16,11 @@ export type UserUpdateInput = Partial<
   Omit<UserCreateInput, 'password' | 'password2'>
 >
 
+export type UserChoice = {
+  id: number
+  name: string
+}
+
 type PaginatedResponse<T> = {
   count: number
   next: string | null
@@ -45,4 +50,26 @@ export const updateUser = async (id: number, payload: UserUpdateInput) => {
 
 export const deleteUser = async (id: number) => {
   await apiClient.delete(`/users/${id}/`)
+}
+
+export const getUserChoices = async (params?: {
+  teamId?: number
+  page?: number
+  pageSize?: number
+}) => {
+  const searchParams = new URLSearchParams()
+  if (params?.teamId) {
+    searchParams.set('team', String(params.teamId))
+  }
+  if (params?.page) {
+    searchParams.set('page', String(params.page))
+  }
+  if (params?.pageSize) {
+    searchParams.set('page_size', String(params.pageSize))
+  }
+  const query = searchParams.toString()
+  const { data } = await apiClient.get<PaginatedResponse<UserChoice>>(
+    `/users/choices/${query ? `?${query}` : ''}`,
+  )
+  return data
 }

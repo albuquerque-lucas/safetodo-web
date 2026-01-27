@@ -3,6 +3,7 @@ import type { Task, TaskStatus } from '../types/api'
 
 export type TaskCreateInput = {
   user?: number
+  team?: number | null
   title: string
   description?: string | null
   due_date?: string | null

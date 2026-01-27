@@ -34,6 +34,23 @@ export type Task = {
   due_date: Timestamp | null
   priority_level: number | null
   priority_level_display: string | null
+  team?: number | null
+  team_display?: string | null
   created_at: Timestamp
   updated_at: Timestamp
+}
+
+export type TeamMemberDisplay = {
+  id: number
+  name: string
+}
+
+export type Team = {
+  id: number
+  name: string
+  description: string | null
+  members: number[]
+  managers: number[]
+  members_display?: TeamMemberDisplay[]
+  managers_display?: TeamMemberDisplay[]
 }
