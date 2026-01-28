@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom'
 import { getCurrentUser, getUser } from '../api/users'
 import { clearAuditLogs, deleteAuditLog, getAuditLogs } from '../api/auditLogs'
+import {
+  clearNotifications,
+  deleteNotification,
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  markNotificationUnread,
+} from '../api/notifications'
 import DataTable from '../components/DataTable'
 import RowActionsMenu from '../components/RowActionsMenu'
 import { confirmDeletion } from '../utils/swalMessages'
@@ -29,14 +37,20 @@ const canDeleteLogs = (role: string) => role === 'super_admin'
 
 const canClearLogs = (role: string) => role === 'super_admin'
 
+const canViewNotifications = (role: string, isOwnProfile: boolean) =>
+  role === 'super_admin' || role === 'company_admin' || isOwnProfile
+
 const UserProfilePage = () => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { userId } = useParams()
+  const [searchParams] = useSearchParams()
   const parsedUserId = userId ? Number(userId) : null
   const isValidUserId =
     parsedUserId !== null && !Number.isNaN(parsedUserId)
-  const [activeTab, setActiveTab] = useState<'profile' | 'logs'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'logs' | 'notifications'>('profile')
   const [logPage, setLogPage] = useState(1)
+  const [notificationPage, setNotificationPage] = useState(1)
 
   const profileQuery = useQuery({
     queryKey: ['user-profile', userId ? parsedUserId : 'me'],
@@ -81,16 +95,38 @@ const UserProfilePage = () => {
   const canViewLogsTab = canViewLogs(viewerRole, isOwnProfile)
   const canDeleteLogsItems = canDeleteLogs(viewerRole)
   const canClearLogsItems = canClearLogs(viewerRole)
+  const canViewNotificationsTab = canViewNotifications(viewerRole, isOwnProfile)
 
   useEffect(() => {
     setLogPage(1)
   }, [profileUserId, activeTab])
 
   useEffect(() => {
+    setNotificationPage(1)
+  }, [profileUserId, activeTab])
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'notifications') {
+      setActiveTab('notifications')
+    } else if (tabParam === 'logs') {
+      setActiveTab('logs')
+    } else if (tabParam === 'profile') {
+      setActiveTab('profile')
+    }
+  }, [searchParams])
+
+  useEffect(() => {
     if (!canViewLogsTab && activeTab === 'logs') {
       setActiveTab('profile')
     }
   }, [activeTab, canViewLogsTab])
+
+  useEffect(() => {
+    if (!canViewNotificationsTab && activeTab === 'notifications') {
+      setActiveTab('profile')
+    }
+  }, [activeTab, canViewNotificationsTab])
 
   const logsQuery = useQuery({
     queryKey: ['audit-logs', profileUserId, logPage, isAdmin],
@@ -111,6 +147,38 @@ const UserProfilePage = () => {
     }
   }, [activeTab, canViewLogsTab, logPage, logsQuery])
 
+  const notificationsQuery = useQuery({
+    queryKey: ['notifications', profileUserId, notificationPage, isAdmin],
+    queryFn: () =>
+      getNotifications({
+        userId: isAdmin ? profileUserId : undefined,
+        page: notificationPage,
+      }),
+    enabled:
+      canViewNotificationsTab && activeTab === 'notifications' && !!profileUserId,
+  })
+
+  const unreadCountQuery = useQuery({
+    queryKey: ['notifications-unread', profileUserId, isAdmin],
+    queryFn: () =>
+      getNotifications({
+        userId: isAdmin ? profileUserId : undefined,
+        unread: true,
+        page: 1,
+      }),
+    enabled: canViewNotificationsTab && !!profileUserId,
+  })
+
+  useEffect(() => {
+    if (
+      activeTab === 'notifications' &&
+      canViewNotificationsTab &&
+      notificationsQuery.refetch
+    ) {
+      notificationsQuery.refetch()
+    }
+  }, [activeTab, canViewNotificationsTab, notificationPage, notificationsQuery])
+
   const deleteMutation = useMutation({
     mutationFn: deleteAuditLog,
     onSuccess: () => {
@@ -122,6 +190,62 @@ const UserProfilePage = () => {
     mutationFn: (targetUserId?: number) => clearAuditLogs({ userId: targetUserId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['audit-logs'] })
+    },
+  })
+
+  const markReadMutation = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false })
+      queryClient.invalidateQueries({
+        queryKey: ['notifications-unread'],
+        exact: false,
+      })
+    },
+  })
+
+  const markUnreadMutation = useMutation({
+    mutationFn: markNotificationUnread,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false })
+      queryClient.invalidateQueries({
+        queryKey: ['notifications-unread'],
+        exact: false,
+      })
+    },
+  })
+
+  const deleteNotificationMutation = useMutation({
+    mutationFn: deleteNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false })
+      queryClient.invalidateQueries({
+        queryKey: ['notifications-unread'],
+        exact: false,
+      })
+    },
+  })
+
+  const clearNotificationsMutation = useMutation({
+    mutationFn: (targetUserId?: number) => clearNotifications({ userId: targetUserId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false })
+      queryClient.invalidateQueries({
+        queryKey: ['notifications-unread'],
+        exact: false,
+      })
+    },
+  })
+
+  const markAllReadMutation = useMutation({
+    mutationFn: (targetUserId?: number) =>
+      markAllNotificationsRead({ userId: targetUserId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false })
+      queryClient.invalidateQueries({
+        queryKey: ['notifications-unread'],
+        exact: false,
+      })
     },
   })
 
@@ -137,6 +261,52 @@ const UserProfilePage = () => {
     if (confirmed && profileUserId) {
       clearMutation.mutate(profileUserId)
     }
+  }
+
+  const handleNotificationClick = async (notificationId: number) => {
+    const notification = notificationsQuery.data?.results.find(
+      (item) => item.id === notificationId,
+    )
+    if (!notification) {
+      return
+    }
+    if (!notification.read_at) {
+      markReadMutation.mutate(notificationId)
+    }
+    const payload = notification.payload
+    const taskId = payload?.['task_id']
+    const teamId = payload?.['team_id']
+    if (taskId) {
+      navigate('/app/tasks')
+      return
+    }
+    if (teamId) {
+      navigate('/app/teams')
+    }
+  }
+
+  const handleDeleteNotification = async (notificationId: number) => {
+    const confirmed = await confirmDeletion('Essa notificacao sera removida.')
+    if (confirmed) {
+      deleteNotificationMutation.mutate(notificationId)
+    }
+  }
+
+  const handleClearNotifications = async () => {
+    const confirmed = await confirmDeletion(
+      'Todas as notificacoes serao removidas.',
+    )
+    if (confirmed) {
+      clearNotificationsMutation.mutate(
+        viewerRole === 'super_admin' ? profileUserId : undefined,
+      )
+    }
+  }
+
+  const handleMarkAllRead = () => {
+    markAllReadMutation.mutate(
+      viewerRole === 'super_admin' ? profileUserId : undefined,
+    )
   }
 
   if (userId && !isValidUserId) {
@@ -189,6 +359,22 @@ const UserProfilePage = () => {
                   onClick={() => setActiveTab('logs')}
                 >
                   Logs
+                </button>
+              </li>
+            ) : null}
+            {canViewNotificationsTab ? (
+              <li className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link ${activeTab === 'notifications' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('notifications')}
+                >
+                  Notificacoes
+                  {unreadCountQuery.data?.count ? (
+                    <span className="notification-badge">
+                      {unreadCountQuery.data.count}
+                    </span>
+                  ) : null}
                 </button>
               </li>
             ) : null}
@@ -250,7 +436,7 @@ const UserProfilePage = () => {
                 </p>
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'logs' ? (
             <div className="profile-logs">
               <div className="profile-logs-header">
                 <div>
@@ -351,6 +537,152 @@ const UserProfilePage = () => {
                         Permissao insuficiente ou erro ao remover logs.
                       </div>
                     ) : null}
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="profile-notifications">
+              <div className="profile-notifications-header">
+                <div>
+                  <h2 className="h5 mb-1">Notificacoes</h2>
+                  <p className="text-muted mb-0">
+                    Acompanhe avisos recentes e acoes pendentes.
+                  </p>
+                </div>
+                <div className="profile-notifications-actions">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={handleMarkAllRead}
+                    disabled={markAllReadMutation.isPending}
+                  >
+                    {markAllReadMutation.isPending
+                      ? 'Marcando...'
+                      : 'Marcar todas como lidas'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger"
+                    onClick={handleClearNotifications}
+                    disabled={clearNotificationsMutation.isPending}
+                  >
+                    {clearNotificationsMutation.isPending
+                      ? 'Limpando...'
+                      : 'Limpar notificacoes'}
+                  </button>
+                </div>
+              </div>
+
+              {notificationsQuery.isLoading ? (
+                <div className="text-muted">Carregando notificacoes...</div>
+              ) : notificationsQuery.isError ? (
+                <div className="text-danger">
+                  Erro ao carregar notificacoes.
+                </div>
+              ) : (
+                <>
+                  <div className="notification-list">
+                    {(notificationsQuery.data?.results ?? []).length === 0 ? (
+                      <div className="text-muted">Nenhuma notificacao.</div>
+                    ) : (
+                      (notificationsQuery.data?.results ?? []).map((item) => {
+                        const isUnread = !item.read_at
+                        const canDeleteItem =
+                          viewerRole === 'super_admin' ||
+                          String(item.recipient) === viewerId
+                        return (
+                          <div
+                            key={item.id}
+                            className={`notification-item ${
+                              isUnread ? 'is-unread' : ''
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              className="notification-main"
+                              onClick={() => handleNotificationClick(item.id)}
+                            >
+                              <div className="notification-title">
+                                {item.type.replaceAll('.', ' ')}
+                              </div>
+                              <div className="notification-meta">
+                                {formatDate(item.created_at)}
+                              </div>
+                              <div className="notification-payload">
+                                {compactMetadata(item.payload)}
+                              </div>
+                            </button>
+                            <div className="notification-actions">
+                              {isUnread ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary btn-sm"
+                                  onClick={() =>
+                                    markReadMutation.mutate(item.id)
+                                  }
+                                  disabled={markReadMutation.isPending}
+                                >
+                                  Marcar como lida
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary btn-sm"
+                                  onClick={() =>
+                                    markUnreadMutation.mutate(item.id)
+                                  }
+                                  disabled={markUnreadMutation.isPending}
+                                >
+                                  Marcar como nao lida
+                                </button>
+                              )}
+                              {canDeleteItem ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-danger btn-sm"
+                                  onClick={() => handleDeleteNotification(item.id)}
+                                  disabled={deleteNotificationMutation.isPending}
+                                >
+                                  Excluir
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                  <div className="profile-logs-footer">
+                    <span className="text-muted">
+                      Total: {notificationsQuery.data?.count ?? 0}
+                    </span>
+                    <div className="btn-group">
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={() =>
+                          setNotificationPage((page) => Math.max(1, page - 1))
+                        }
+                        disabled={!notificationsQuery.data?.previous}
+                      >
+                        Anterior
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={() => setNotificationPage((page) => page + 1)}
+                        disabled={!notificationsQuery.data?.next}
+                      >
+                        Proxima
+                      </button>
+                    </div>
+                  </div>
+                  {deleteNotificationMutation.isError ||
+                  clearNotificationsMutation.isError ? (
+                    <div className="text-danger mt-3">
+                      Permissao insuficiente ou erro ao remover notificacoes.
+                    </div>
+                  ) : null}
                 </>
               )}
             </div>

@@ -36,6 +36,16 @@ export type AuditLog = {
   user_agent: string
 }
 
+export type Notification = {
+  id: number
+  recipient: number
+  actor: number | null
+  type: string
+  payload: Record<string, unknown>
+  created_at: Timestamp
+  read_at: Timestamp | null
+}
+
 export type Task = {
   id: number
   user: number

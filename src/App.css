@@ -6,7 +6,7 @@
 
 .topbar {
   display: grid;
-  grid-template-columns: 56px 1fr 56px;
+  grid-template-columns: 56px 1fr auto;
   align-items: center;
   height: 64px;
   padding: 0 12px;
@@ -62,6 +62,118 @@
 .topbar-logout:focus-visible {
   background: #e2e8f0;
   border-color: #cbd5f5;
+}
+
+.topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-icon-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  background: #f8fafc;
+  border-radius: 10px;
+  color: #111827;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.topbar-icon-button:hover,
+.topbar-icon-button:focus-visible {
+  background: #e2e8f0;
+  border-color: #cbd5f5;
+}
+
+.topbar-notifications {
+  position: relative;
+}
+
+.topbar-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 0.65rem;
+  padding: 0 4px;
+}
+
+.notifications-menu {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 280px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 20px 45px -30px rgba(15, 23, 42, 0.45);
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  z-index: 20;
+}
+
+.notifications-menu-header {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.notifications-menu-body {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notifications-menu-item {
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.notifications-menu-item.is-unread {
+  border-color: #cbd5f5;
+  background: #f8fafc;
+  position: relative;
+}
+
+.notifications-menu-item.is-unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 4px;
+  background: #0f172a;
+}
+
+.notifications-menu-title {
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.notifications-menu-time {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.notifications-menu-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .app-layout {
@@ -264,6 +376,91 @@
   flex-direction: column;
   gap: 12px;
   align-items: flex-start;
+}
+
+.notification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #dc2626;
+  line-height: 1;
+}
+
+.profile-notifications {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-notifications-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-notifications-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notification-item {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notification-item.is-unread {
+  border-color: #cbd5f5;
+  background: #f8fafc;
+  box-shadow: 0 16px 30px -30px rgba(15, 23, 42, 0.4);
+}
+
+.notification-main {
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #0f172a;
+  text-transform: capitalize;
+}
+
+.notification-meta {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.notification-payload {
+  font-size: 0.85rem;
+  color: #475569;
+  margin-top: 6px;
+}
+
+.notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .home-panel {
@@ -573,6 +770,17 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .profile-notifications-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .profile-notifications-actions {
+    flex-direction: row;
+    align-items: center;
   }
 
   .admin-header {
