@@ -65,6 +65,21 @@ const AppModal = ({
     return () => unlockBodyScroll()
   }, [isOpen])
 
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, onClose])
+
   const computedWidth = `min(${MOBILE_VW}vw, ${SIZE_MAX_PX[size]}px)`
 
   return (

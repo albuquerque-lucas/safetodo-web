@@ -38,6 +38,10 @@
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  color: inherit;
+  text-decoration: none;
+  justify-self: center;
+  width: fit-content;
 }
 
 .topbar-spacer {
@@ -471,6 +475,21 @@
   box-shadow: 0 20px 45px -40px rgba(15, 23, 42, 0.55);
   display: flex;
   align-items: flex-start;
+  justify-content: center;
+}
+
+.home-panel-content {
+  text-align: center;
+  margin-top: 12px;
+  max-width: 560px;
+}
+
+.home-panel--center {
+  align-items: center;
+}
+
+.home-panel--center .home-panel-content {
+  margin-top: 0;
 }
 
 .task-details {
@@ -638,6 +657,8 @@
 .public-brand {
   font-weight: 600;
   letter-spacing: 0.03em;
+  color: inherit;
+  text-decoration: none;
 }
 
 .public-nav {
@@ -802,5 +823,14 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
+  }
+}
+.home-panel {
+  padding-right: calc(32px + 72px);
+}
+
+@media (min-width: 900px) {
+  .home-panel {
+    padding-right: calc(32px + 96px);
   }
 }

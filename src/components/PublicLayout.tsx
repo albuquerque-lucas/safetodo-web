@@ -3,7 +3,9 @@ import { NavLink, Outlet } from 'react-router-dom'
 const PublicLayout = () => (
   <div className="public-shell">
     <header className="public-topbar">
-      <span className="public-brand">Tasks Django</span>
+      <NavLink to="/" className="public-brand">
+        Tasks Django
+      </NavLink>
       <nav className="public-nav">
         <NavLink to="/" end className="public-link">
           Home

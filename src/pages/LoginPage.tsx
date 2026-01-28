@@ -34,6 +34,7 @@ const LoginPage = () => {
         'auth_role',
         data.username === 'admin' ? 'super_admin' : 'usuario'
       )
+      window.dispatchEvent(new Event('auth-token-changed'))
       navigate('/app', { replace: true })
     } catch (error) {
       setErrorMessage('Credenciais inválidas. Tente novamente.')

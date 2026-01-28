@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { motion } from 'framer-motion'
@@ -16,6 +16,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import apiClient from '../lib/apiClient'
 import { getNotifications, markNotificationRead } from '../api/notifications'
+import useNotificationsSocket from '../hooks/useNotificationsSocket'
+import useAuthToken from '../hooks/useAuthToken'
 
 type SidebarLayoutProps = {
   title: string
@@ -25,13 +27,23 @@ type SidebarLayoutProps = {
 function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const [showNotificationsBadge, setShowNotificationsBadge] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const notificationsRef = useRef<HTMLDivElement | null>(null)
+  const lastUnreadCountRef = useRef<number>(0)
+  const authToken = useAuthToken()
 
   const handleLogout = async () => {
+    const token = localStorage.getItem('token')
     try {
-      await apiClient.post('/users/logout/')
+      await apiClient.post(
+        '/users/logout/',
+        {},
+        token
+          ? { headers: { Authorization: `Bearer ${token}` } }
+          : undefined,
+      )
     } catch {
       // No-op: logout pode ser apenas client-side
     } finally {
@@ -40,6 +52,7 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
       localStorage.removeItem('auth_username')
       localStorage.removeItem('auth_user_id')
       localStorage.removeItem('auth_role')
+      window.dispatchEvent(new Event('auth-token-changed'))
       navigate('/', { replace: true })
     }
   }
@@ -47,12 +60,22 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const isAdmin = localStorage.getItem('auth_role') === 'super_admin'
   const viewerId = Number(localStorage.getItem('auth_user_id') ?? '')
   const viewerIdParam = Number.isNaN(viewerId) ? undefined : viewerId
+  const isAuthenticated = !!authToken
+
+  useNotificationsSocket({
+    enabled: isAuthenticated,
+    token: authToken,
+  })
 
   const notificationsQuery = useQuery({
     queryKey: ['notifications', 'menu'],
     queryFn: () =>
-      getNotifications({ pageSize: 10, page: 1, userId: viewerIdParam }),
-    enabled: isNotificationsOpen,
+      getNotifications({
+        pageSize: 10,
+        page: 1,
+        userId: isAdmin ? viewerIdParam : undefined,
+      }),
+    enabled: isNotificationsOpen && isAuthenticated,
   })
 
   const unreadCountQuery = useQuery({
@@ -62,10 +85,22 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
         unread: true,
         pageSize: 1,
         page: 1,
-        userId: viewerIdParam,
+        userId: isAdmin ? viewerIdParam : undefined,
       }),
-    enabled: true,
+    enabled: isAuthenticated,
   })
+
+  useEffect(() => {
+    const currentCount = unreadCountQuery.data?.count ?? 0
+    const prevCount = lastUnreadCountRef.current
+    if (currentCount > prevCount) {
+      setShowNotificationsBadge(true)
+    }
+    if (currentCount === 0) {
+      setShowNotificationsBadge(false)
+    }
+    lastUnreadCountRef.current = currentCount
+  }, [unreadCountQuery.data?.count])
 
   useEffect(() => {
     if (!isNotificationsOpen) {
@@ -83,6 +118,7 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
     if (!isNotificationsOpen) {
       return
     }
+    setShowNotificationsBadge(false)
     const handleClickOutside = (event: MouseEvent) => {
       if (
         notificationsRef.current &&
@@ -154,7 +190,9 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
         >
           <FontAwesomeIcon icon={faBars} />
         </button>
-        <span className="topbar-title">{title}</span>
+        <Link className="topbar-title" to="/app">
+          {title}
+        </Link>
         <div className="topbar-actions">
           <div className="topbar-notifications" ref={notificationsRef}>
             <button
@@ -164,10 +202,16 @@ function SidebarLayout({ title, children }: SidebarLayoutProps) {
               onClick={() => setIsNotificationsOpen((open) => !open)}
             >
               <FontAwesomeIcon icon={faBell} />
-              {unreadCountQuery.data?.count ? (
-                <span className="notification-badge topbar-badge">
+              {showNotificationsBadge && unreadCountQuery.data?.count ? (
+                <motion.span
+                  key={`notif-${unreadCountQuery.data.count}`}
+                  className="notification-badge topbar-badge"
+                  initial={{ scale: 0.6 }}
+                  animate={{ scale: [0.6, 1.65, 0.88, 1.2, 1] }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                >
                   {unreadCountQuery.data.count}
-                </span>
+                </motion.span>
               ) : null}
             </button>
             {isNotificationsOpen ? (
