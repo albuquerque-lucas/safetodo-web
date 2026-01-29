@@ -208,6 +208,7 @@
   flex: 1;
   padding: 24px;
   transition: padding 0.2s ease;
+  min-width: 0;
 }
 
 .sidebar {
@@ -276,6 +277,8 @@
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 20px 45px -40px rgba(15, 23, 42, 0.8);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .page-card--min {
@@ -800,7 +803,15 @@
   margin-bottom: 0;
 }
 
-.table-sort {
+.table-responsive {
+  max-width: 100%;
+}
+
+.datatable-table-fixed {
+  table-layout: fixed;
+}
+
+.datatable-sortable-header {
   border: none;
   background: transparent;
   padding: 0;
@@ -809,19 +820,59 @@
   gap: 6px;
   font-weight: 600;
   color: inherit;
+  cursor: pointer;
+  transition: color 0.18s ease;
 }
 
-.table-sort:focus {
+.datatable-sortable-header:focus {
   outline: none;
 }
 
-.table-sort.is-active {
+.datatable-sortable-header:hover {
+  color: #0f172a;
+}
+
+.datatable-sortable-header.is-active {
   color: #111827;
 }
 
-.table-sort-indicator {
-  font-size: 0.75rem;
+.datatable-sort-icon {
+  font-size: 1rem;
   line-height: 1;
+  color: #6c757d;
+  opacity: 0.45;
+  transition: opacity 0.18s ease;
+}
+
+.datatable-sortable-header:hover .datatable-sort-icon {
+  opacity: 0.65;
+}
+
+.datatable-sortable-header.is-active .datatable-sort-icon {
+  opacity: 0.85;
+}
+
+.datatable-cell-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-responsive .table th,
+.table-responsive .table td {
+  white-space: nowrap;
+}
+
+.datatable-scroll-wrapper {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.datatable-scroll-wrapper .table {
+  width: 100%;
+  min-width: 960px;
 }
 
 .row-actions-toggle {
