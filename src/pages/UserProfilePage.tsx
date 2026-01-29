@@ -14,6 +14,7 @@ import {
 import DataTable from '../components/DataTable'
 import RowActionsMenu from '../components/RowActionsMenu'
 import { confirmDeletion } from '../utils/swalMessages'
+import type { AuditLog } from '../types/api'
 
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleString() : '-'
@@ -471,17 +472,17 @@ const UserProfilePage = () => {
                     columns={[
                       {
                         header: 'Data/Hora',
-                        render: (log) => formatDate(log.timestamp),
+                        render: (log: AuditLog) => formatDate(log.timestamp),
                       },
-                      { header: 'Acao', render: (log) => log.action },
+                      { header: 'Acao', render: (log: AuditLog) => log.action },
                       {
                         header: 'Entidade',
-                        render: (log) => log.entity_type,
+                        render: (log: AuditLog) => log.entity_type,
                       },
-                      { header: 'ID', render: (log) => log.entity_id || '-' },
+                      { header: 'ID', render: (log: AuditLog) => log.entity_id || '-' },
                       {
                         header: 'Resumo',
-                        render: (log) => compactMetadata(log.metadata),
+                        render: (log: AuditLog) => compactMetadata(log.metadata),
                       },
                       ...(canDeleteLogsItems
                         ? [
@@ -489,7 +490,7 @@ const UserProfilePage = () => {
                               header: 'Opcoes',
                               headerClassName: 'text-end',
                               className: 'text-end',
-                              render: (log) => (
+                              render: (log: AuditLog) => (
                                 <RowActionsMenu
                                   items={[
                                     {
@@ -507,7 +508,7 @@ const UserProfilePage = () => {
                     ]}
                     data={logsQuery.data?.results ?? []}
                     emptyMessage="Nenhum log encontrado."
-                    rowKey={(log) => log.id}
+                    rowKey={(log: AuditLog) => log.id}
                   />
                   <div className="profile-logs-footer">
                     <span className="text-muted">

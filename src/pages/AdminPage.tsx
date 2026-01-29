@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import AppModal from '../components/AppModal'
 import DataTable from '../components/DataTable'
 import NewItemButton from '../components/NewItemButton'
+import PriorityLevelCreateModal from '../components/modals/PriorityLevelCreateModal'
+import PriorityLevelListModal from '../components/modals/PriorityLevelListModal'
 import { createPriorityLevel, getPriorityLevels } from '../api/priorityLevels'
+import useModalState from '../hooks/useModalState'
 
 type PriorityLevelFormState = {
   level: string
@@ -21,10 +23,11 @@ const defaultPriorityLevelForm: PriorityLevelFormState = {
 
 const AdminPage = () => {
   const queryClient = useQueryClient()
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isListOpen, setIsListOpen] = useState(false)
   const [priorityLevelForm, setPriorityLevelForm] =
     useState<PriorityLevelFormState>(defaultPriorityLevelForm)
+
+  const createModal = useModalState<'create'>()
+  const listModal = useModalState<'list'>()
 
   const priorityLevelsQuery = useQuery({
     queryKey: ['priority-levels'],
@@ -36,7 +39,7 @@ const AdminPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['priority-levels'] })
       setPriorityLevelForm(defaultPriorityLevelForm)
-      setIsCreateOpen(false)
+      createModal.close()
     },
   })
 
@@ -73,123 +76,96 @@ const AdminPage = () => {
             <button
               className="btn btn-outline-dark"
               type="button"
-              onClick={() => setIsListOpen(true)}
+              onClick={() => listModal.open('list')}
             >
               Visualizar niveis
             </button>
             <NewItemButton
               label="Adicionar nivel"
-              onClick={() => setIsCreateOpen(true)}
+              onClick={() => createModal.open('create')}
             />
           </div>
         </div>
       </div>
       <div className="admin-divider" />
 
-      <AppModal
-        isOpen={isCreateOpen}
-        title="Adicionar nivel de prioridade"
-        onClose={() => setIsCreateOpen(false)}
-        footer={
-          <>
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => setIsCreateOpen(false)}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-dark"
-              form="priority-level-create-form"
-              disabled={createPriorityLevelMutation.isPending}
-            >
-              {createPriorityLevelMutation.isPending ? 'Salvando...' : 'Criar'}
-            </button>
-          </>
-        }
+      <PriorityLevelCreateModal
+        isOpen={createModal.isOpen}
+        onClose={createModal.close}
+        onSubmit={handleCreateSubmit}
+        formId="priority-level-create-form"
+        isSaving={createPriorityLevelMutation.isPending}
+        saveError={createPriorityLevelMutation.isError}
       >
-        <form
-          id="priority-level-create-form"
-          onSubmit={handleCreateSubmit}
-        >
-          <div className="row g-3">
-            <div className="col-12 col-md-4">
-              <label className="form-label">Nivel</label>
+        <div className="row g-3">
+          <div className="col-12 col-md-4">
+            <label className="form-label">Nivel</label>
+            <input
+              className="form-control"
+              type="number"
+              min="1"
+              value={priorityLevelForm.level}
+              onChange={(event) =>
+                setPriorityLevelForm({
+                  ...priorityLevelForm,
+                  level: event.target.value,
+                })
+              }
+              required
+            />
+          </div>
+          <div className="col-12 col-md-8">
+            <label className="form-label">Nome</label>
+            <input
+              className="form-control"
+              value={priorityLevelForm.name}
+              onChange={(event) =>
+                setPriorityLevelForm({
+                  ...priorityLevelForm,
+                  name: event.target.value,
+                })
+              }
+              required
+            />
+          </div>
+          <div className="col-12">
+            <label className="form-label">Descricao</label>
+            <input
+              className="form-control"
+              value={priorityLevelForm.description}
+              onChange={(event) =>
+                setPriorityLevelForm({
+                  ...priorityLevelForm,
+                  description: event.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="col-12">
+            <div className="form-check">
               <input
-                className="form-control"
-                type="number"
-                min="1"
-                value={priorityLevelForm.level}
+                className="form-check-input"
+                type="checkbox"
+                id="priority-level-active"
+                checked={priorityLevelForm.is_active}
                 onChange={(event) =>
                   setPriorityLevelForm({
                     ...priorityLevelForm,
-                    level: event.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="col-12 col-md-8">
-              <label className="form-label">Nome</label>
-              <input
-                className="form-control"
-                value={priorityLevelForm.name}
-                onChange={(event) =>
-                  setPriorityLevelForm({
-                    ...priorityLevelForm,
-                    name: event.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="col-12">
-              <label className="form-label">Descricao</label>
-              <input
-                className="form-control"
-                value={priorityLevelForm.description}
-                onChange={(event) =>
-                  setPriorityLevelForm({
-                    ...priorityLevelForm,
-                    description: event.target.value,
+                    is_active: event.target.checked,
                   })
                 }
               />
-            </div>
-            <div className="col-12">
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="priority-level-active"
-                  checked={priorityLevelForm.is_active}
-                  onChange={(event) =>
-                    setPriorityLevelForm({
-                      ...priorityLevelForm,
-                      is_active: event.target.checked,
-                    })
-                  }
-                />
-                <label className="form-check-label" htmlFor="priority-level-active">
-                  Nivel ativo
-                </label>
-              </div>
+              <label className="form-check-label" htmlFor="priority-level-active">
+                Nivel ativo
+              </label>
             </div>
           </div>
-          {createPriorityLevelMutation.isError ? (
-            <div className="text-danger mt-3">
-              Erro ao criar nivel de prioridade.
-            </div>
-          ) : null}
-        </form>
-      </AppModal>
+        </div>
+      </PriorityLevelCreateModal>
 
-      <AppModal
-        isOpen={isListOpen}
-        title="Niveis de prioridade"
-        onClose={() => setIsListOpen(false)}
+      <PriorityLevelListModal
+        isOpen={listModal.isOpen}
+        onClose={listModal.close}
       >
         {priorityLevelsQuery.isLoading ? (
           <div className="text-muted">Carregando niveis...</div>
@@ -214,7 +190,7 @@ const AdminPage = () => {
             rowKey={(level) => level.id}
           />
         )}
-      </AppModal>
+      </PriorityLevelListModal>
     </div>
   )
 }

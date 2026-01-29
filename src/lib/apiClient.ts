@@ -9,13 +9,6 @@ const isPublicApiPath = (url?: string) =>
 const isOnPublicRoute = () =>
   PUBLIC_APP_ROUTES.some((path) => window.location.pathname.startsWith(path))
 
-const redirectToLogin = () => {
-  if (window.location.pathname === '/login') {
-    return
-  }
-  window.location.assign('/login')
-}
-
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api',
   headers: {

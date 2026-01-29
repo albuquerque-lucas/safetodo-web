@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -8,10 +8,11 @@ import {
   getUsers,
   updateUser,
 } from '../api/users'
-import AppModal from '../components/AppModal'
 import DataTable from '../components/DataTable'
 import NewItemButton from '../components/NewItemButton'
 import RowActionsMenu from '../components/RowActionsMenu'
+import UserModal from '../components/modals/UserModal'
+import useModalState from '../hooks/useModalState'
 import { confirmDeletion } from '../utils/swalMessages'
 
 type UserCreateFormState = {
@@ -55,9 +56,9 @@ const UsersPage = () => {
   )
   const [editForm, setEditForm] =
     useState<UserEditFormState>(defaultEditForm)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+
+  const createModal = useModalState<'create'>()
+  const editModal = useModalState<'edit', number>()
 
   const usersQuery = useQuery({
     queryKey: ['users'],
@@ -65,13 +66,13 @@ const UsersPage = () => {
   })
 
   const userQuery = useQuery({
-    queryKey: ['user', selectedUserId],
-    queryFn: () => getUser(selectedUserId as number),
-    enabled: selectedUserId !== null && isEditOpen,
+    queryKey: ['user', editModal.selectedId],
+    queryFn: () => getUser(editModal.selectedId as number),
+    enabled: editModal.selectedId !== null && editModal.isOpen,
   })
 
   useEffect(() => {
-    if (isEditOpen && userQuery.data) {
+    if (editModal.isOpen && userQuery.data) {
       const user = userQuery.data
       setEditForm({
         username: user.username ?? '',
@@ -82,7 +83,7 @@ const UsersPage = () => {
         phone: user.phone ?? '',
       })
     }
-  }, [isEditOpen, userQuery.data])
+  }, [editModal.isOpen, userQuery.data])
 
   const createMutation = useMutation({
     mutationFn: createUser,
@@ -90,7 +91,7 @@ const UsersPage = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setCreateForm(defaultCreateForm)
-      setIsCreateOpen(false)
+      createModal.close()
     },
   })
 
@@ -104,12 +105,11 @@ const UsersPage = () => {
     }) => updateUser(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      if (selectedUserId) {
-        queryClient.invalidateQueries({ queryKey: ['user', selectedUserId] })
+      if (editModal.selectedId) {
+        queryClient.invalidateQueries({ queryKey: ['user', editModal.selectedId] })
       }
       queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
-      setIsEditOpen(false)
-      setSelectedUserId(null)
+      editModal.close()
     },
   })
 
@@ -137,11 +137,11 @@ const UsersPage = () => {
 
   const handleEditSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!selectedUserId) {
+    if (!editModal.selectedId) {
       return
     }
     updateMutation.mutate({
-      id: selectedUserId,
+      id: editModal.selectedId,
       payload: {
         username: editForm.username.trim(),
         email: editForm.email.trim(),
@@ -154,13 +154,7 @@ const UsersPage = () => {
   }
 
   const openEditModal = (id: number) => {
-    setSelectedUserId(id)
-    setIsEditOpen(true)
-  }
-
-  const closeEditModal = () => {
-    setIsEditOpen(false)
-    setSelectedUserId(null)
+    editModal.open('edit', id)
   }
 
   const handleDelete = async (id: number) => {
@@ -179,7 +173,7 @@ const UsersPage = () => {
         </div>
         <NewItemButton
           label="Criar usuario"
-          onClick={() => setIsCreateOpen(true)}
+          onClick={() => createModal.open('create')}
         />
       </div>
 
@@ -232,190 +226,68 @@ const UsersPage = () => {
         />
       )}
 
-      <AppModal
-        isOpen={isEditOpen && selectedUserId !== null}
-        title="Editar usuario"
-        onClose={closeEditModal}
-        footer={
-          <>
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={closeEditModal}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-dark"
-              form="user-edit-form"
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
-            </button>
-          </>
-        }
+      <UserModal
+        mode="edit"
+        isOpen={editModal.isOpen && editModal.selectedId !== null}
+        onClose={editModal.close}
+        onSubmit={handleEditSubmit}
+        formId="user-edit-form"
+        isSaving={updateMutation.isPending}
+        saveError={updateMutation.isError}
       >
         {userQuery.isLoading ? (
           <div className="text-muted">Carregando detalhes...</div>
         ) : userQuery.isError ? (
           <div className="text-danger">Erro ao carregar usuario.</div>
         ) : (
-          <form id="user-edit-form" onSubmit={handleEditSubmit}>
-            <div className="row g-3">
-              <div className="col-12 col-md-4">
-                <label className="form-label">Username</label>
-                <input
-                  className="form-control"
-                  value={editForm.username}
-                  onChange={(event) =>
-                    setEditForm({
-                      ...editForm,
-                      username: event.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div className="col-12 col-md-4">
-                <label className="form-label">Email</label>
-                <input
-                  className="form-control"
-                  type="email"
-                  value={editForm.email}
-                  onChange={(event) =>
-                    setEditForm({ ...editForm, email: event.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="col-6 col-md-2">
-                <label className="form-label">Nome</label>
-                <input
-                  className="form-control"
-                  value={editForm.first_name}
-                  onChange={(event) =>
-                    setEditForm({
-                      ...editForm,
-                      first_name: event.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="col-6 col-md-2">
-                <label className="form-label">Sobrenome</label>
-                <input
-                  className="form-control"
-                  value={editForm.last_name}
-                  onChange={(event) =>
-                    setEditForm({
-                      ...editForm,
-                      last_name: event.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Bio</label>
-                <input
-                  className="form-control"
-                  value={editForm.bio}
-                  onChange={(event) =>
-                    setEditForm({ ...editForm, bio: event.target.value })
-                  }
-                />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Telefone</label>
-                <input
-                  className="form-control"
-                  value={editForm.phone}
-                  onChange={(event) =>
-                    setEditForm({ ...editForm, phone: event.target.value })
-                  }
-                />
-              </div>
-            </div>
-            {updateMutation.isError ? (
-              <div className="text-danger mt-3">Erro ao salvar usuario.</div>
-            ) : null}
-          </form>
-        )}
-      </AppModal>
-
-      <AppModal
-        isOpen={isCreateOpen}
-        title="Criar usuario"
-        onClose={() => setIsCreateOpen(false)}
-        footer={
-          <>
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => setIsCreateOpen(false)}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-dark"
-              form="user-create-form"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending ? 'Salvando...' : 'Criar'}
-            </button>
-          </>
-        }
-      >
-        <form id="user-create-form" onSubmit={handleCreateSubmit}>
           <div className="row g-3">
-            <div className="col-12 col-md-6">
+            <div className="col-12 col-md-4">
               <label className="form-label">Username</label>
               <input
                 className="form-control"
-                value={createForm.username}
+                value={editForm.username}
                 onChange={(event) =>
-                  setCreateForm({
-                    ...createForm,
+                  setEditForm({
+                    ...editForm,
                     username: event.target.value,
                   })
                 }
                 required
               />
             </div>
-            <div className="col-12 col-md-6">
+            <div className="col-12 col-md-4">
               <label className="form-label">Email</label>
               <input
                 className="form-control"
                 type="email"
-                value={createForm.email}
+                value={editForm.email}
                 onChange={(event) =>
-                  setCreateForm({ ...createForm, email: event.target.value })
+                  setEditForm({ ...editForm, email: event.target.value })
                 }
                 required
               />
             </div>
-            <div className="col-6 col-md-3">
+            <div className="col-6 col-md-2">
               <label className="form-label">Nome</label>
               <input
                 className="form-control"
-                value={createForm.first_name}
+                value={editForm.first_name}
                 onChange={(event) =>
-                  setCreateForm({
-                    ...createForm,
+                  setEditForm({
+                    ...editForm,
                     first_name: event.target.value,
                   })
                 }
               />
             </div>
-            <div className="col-6 col-md-3">
+            <div className="col-6 col-md-2">
               <label className="form-label">Sobrenome</label>
               <input
                 className="form-control"
-                value={createForm.last_name}
+                value={editForm.last_name}
                 onChange={(event) =>
-                  setCreateForm({
-                    ...createForm,
+                  setEditForm({
+                    ...editForm,
                     last_name: event.target.value,
                   })
                 }
@@ -425,9 +297,9 @@ const UsersPage = () => {
               <label className="form-label">Bio</label>
               <input
                 className="form-control"
-                value={createForm.bio}
+                value={editForm.bio}
                 onChange={(event) =>
-                  setCreateForm({ ...createForm, bio: event.target.value })
+                  setEditForm({ ...editForm, bio: event.target.value })
                 }
               />
             </div>
@@ -435,48 +307,130 @@ const UsersPage = () => {
               <label className="form-label">Telefone</label>
               <input
                 className="form-control"
-                value={createForm.phone}
+                value={editForm.phone}
                 onChange={(event) =>
-                  setCreateForm({ ...createForm, phone: event.target.value })
+                  setEditForm({ ...editForm, phone: event.target.value })
                 }
-              />
-            </div>
-            <div className="col-6 col-md-6">
-              <label className="form-label">Senha</label>
-              <input
-                className="form-control"
-                type="password"
-                value={createForm.password}
-                onChange={(event) =>
-                  setCreateForm({
-                    ...createForm,
-                    password: event.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="col-6 col-md-6">
-              <label className="form-label">Confirmar senha</label>
-              <input
-                className="form-control"
-                type="password"
-                value={createForm.password2}
-                onChange={(event) =>
-                  setCreateForm({
-                    ...createForm,
-                    password2: event.target.value,
-                  })
-                }
-                required
               />
             </div>
           </div>
-          {createMutation.isError ? (
-            <div className="text-danger mt-3">Erro ao criar usuario.</div>
-          ) : null}
-        </form>
-      </AppModal>
+        )}
+      </UserModal>
+
+      <UserModal
+        mode="create"
+        isOpen={createModal.isOpen}
+        onClose={createModal.close}
+        onSubmit={handleCreateSubmit}
+        formId="user-create-form"
+        isSaving={createMutation.isPending}
+        saveError={createMutation.isError}
+      >
+        <div className="row g-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label">Username</label>
+            <input
+              className="form-control"
+              value={createForm.username}
+              onChange={(event) =>
+                setCreateForm({
+                  ...createForm,
+                  username: event.target.value,
+                })
+              }
+              required
+            />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label">Email</label>
+            <input
+              className="form-control"
+              type="email"
+              value={createForm.email}
+              onChange={(event) =>
+                setCreateForm({ ...createForm, email: event.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Nome</label>
+            <input
+              className="form-control"
+              value={createForm.first_name}
+              onChange={(event) =>
+                setCreateForm({
+                  ...createForm,
+                  first_name: event.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Sobrenome</label>
+            <input
+              className="form-control"
+              value={createForm.last_name}
+              onChange={(event) =>
+                setCreateForm({
+                  ...createForm,
+                  last_name: event.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label">Bio</label>
+            <input
+              className="form-control"
+              value={createForm.bio}
+              onChange={(event) =>
+                setCreateForm({ ...createForm, bio: event.target.value })
+              }
+            />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label">Telefone</label>
+            <input
+              className="form-control"
+              value={createForm.phone}
+              onChange={(event) =>
+                setCreateForm({ ...createForm, phone: event.target.value })
+              }
+            />
+          </div>
+          <div className="col-6 col-md-6">
+            <label className="form-label">Senha</label>
+            <input
+              className="form-control"
+              type="password"
+              value={createForm.password}
+              onChange={(event) =>
+                setCreateForm({
+                  ...createForm,
+                  password: event.target.value,
+                })
+              }
+              required
+            />
+          </div>
+          <div className="col-6 col-md-6">
+            <label className="form-label">Confirmar senha</label>
+            <input
+              className="form-control"
+              type="password"
+              value={createForm.password2}
+              onChange={(event) =>
+                setCreateForm({
+                  ...createForm,
+                  password2: event.target.value,
+                })
+              }
+              required
+            />
+          </div>
+        </div>
+      </UserModal>
     </div>
   )
 }
