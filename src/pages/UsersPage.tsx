@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -9,6 +9,7 @@ import {
   updateUser,
 } from '../api/users'
 import NewItemButton from '../components/NewItemButton'
+import PaginationFooter from '../components/PaginationFooter'
 import UserModal from '../components/modals/UserModal'
 import UsersTable from '../components/users/UsersTable'
 import useModalState from '../hooks/useModalState'
@@ -38,6 +39,7 @@ const defaultEditForm: UserEditFormState = {
 const UsersPage = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const [page, setPage] = useState(1)
   const [createForm, setCreateForm] = useState<UserCreateFormState>(
     defaultCreateForm,
   )
@@ -48,8 +50,8 @@ const UsersPage = () => {
   const editModal = useModalState<'edit', number>()
 
   const usersQuery = useQuery({
-    queryKey: ['users'],
-    queryFn: getUsers,
+    queryKey: ['users', page],
+    queryFn: () => getUsers({ page }),
   })
 
   const userQuery = useQuery({
@@ -152,7 +154,7 @@ const UsersPage = () => {
   }
 
   return (
-    <div className="page-card">
+    <div className="page-card page-card--min">
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
         <div>
           <h1 className="h3 mb-1">Usuarios</h1>
@@ -165,7 +167,7 @@ const UsersPage = () => {
       </div>
 
       <UsersTable
-        users={usersQuery.data ?? []}
+        users={usersQuery.data?.results ?? []}
         isLoading={usersQuery.isLoading}
         isError={usersQuery.isError}
         isDeleting={deleteMutation.isPending}
@@ -173,6 +175,16 @@ const UsersPage = () => {
         onEdit={openEditModal}
         onDelete={handleDelete}
       />
+
+      {!usersQuery.isLoading && !usersQuery.isError ? (
+        <PaginationFooter
+          total={usersQuery.data?.count ?? 0}
+          hasPrevious={!!usersQuery.data?.previous}
+          hasNext={!!usersQuery.data?.next}
+          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
+          onNext={() => setPage((current) => current + 1)}
+        />
+      ) : null}
 
       <UserModal
         mode="edit"

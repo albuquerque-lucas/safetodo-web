@@ -28,9 +28,24 @@ type PaginatedResponse<T> = {
   results: T[]
 }
 
-export const getUsers = async () => {
-  const { data } = await apiClient.get<PaginatedResponse<User>>('/users/')
-  return data.results
+export type UserFilters = {
+  page?: number
+  pageSize?: number
+}
+
+export const getUsers = async (filters: UserFilters = {}) => {
+  const searchParams = new URLSearchParams()
+  if (filters.page) {
+    searchParams.set('page', String(filters.page))
+  }
+  if (filters.pageSize) {
+    searchParams.set('page_size', String(filters.pageSize))
+  }
+  const query = searchParams.toString()
+  const { data } = await apiClient.get<PaginatedResponse<User>>(
+    `/users/${query ? `?${query}` : ''}`,
+  )
+  return data
 }
 
 export const getUser = async (id: number) => {

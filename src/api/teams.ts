@@ -17,9 +17,24 @@ export type TeamCreateInput = {
 
 export type TeamUpdateInput = Partial<TeamCreateInput>
 
-export const getTeams = async () => {
-  const { data } = await apiClient.get<PaginatedResponse<Team>>('/teams/')
-  return data.results
+export type TeamFilters = {
+  page?: number
+  pageSize?: number
+}
+
+export const getTeams = async (filters: TeamFilters = {}) => {
+  const searchParams = new URLSearchParams()
+  if (filters.page) {
+    searchParams.set('page', String(filters.page))
+  }
+  if (filters.pageSize) {
+    searchParams.set('page_size', String(filters.pageSize))
+  }
+  const query = searchParams.toString()
+  const { data } = await apiClient.get<PaginatedResponse<Team>>(
+    `/teams/${query ? `?${query}` : ''}`,
+  )
+  return data
 }
 
 export const getTeam = async (id: number) => {

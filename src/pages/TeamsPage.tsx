@@ -1,4 +1,5 @@
 import NewItemButton from '../components/NewItemButton'
+import PaginationFooter from '../components/PaginationFooter'
 import TeamsTable from '../components/teams/TeamsTable'
 import TeamCreateModal from '../components/modals/TeamCreateModal'
 import TeamModal from '../components/modals/TeamModal'
@@ -7,6 +8,8 @@ import useTeamsPageController from '../hooks/useTeamsPageController'
 
 const TeamsPage = () => {
   const {
+    page,
+    setPage,
     teamsQuery,
     teamQuery,
     teamTasksQuery,
@@ -44,7 +47,7 @@ const TeamsPage = () => {
   } = useTeamsPageController()
 
   return (
-    <div className="page-card">
+    <div className="page-card page-card--min">
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
         <div>
           <h1 className="h3 mb-1">Equipes</h1>
@@ -57,7 +60,7 @@ const TeamsPage = () => {
       </div>
 
       <TeamsTable
-        teams={teamsQuery.data ?? []}
+        teams={teamsQuery.data?.results ?? []}
         isLoading={teamsQuery.isLoading}
         isError={teamsQuery.isError}
         isDeleting={deleteMutation.isPending}
@@ -65,6 +68,16 @@ const TeamsPage = () => {
         onEdit={(id) => openTeamModal(id, 'edit')}
         onDelete={handleDelete}
       />
+
+      {!teamsQuery.isLoading && !teamsQuery.isError ? (
+        <PaginationFooter
+          total={teamsQuery.data?.count ?? 0}
+          hasPrevious={!!teamsQuery.data?.previous}
+          hasNext={!!teamsQuery.data?.next}
+          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
+          onNext={() => setPage((current) => current + 1)}
+        />
+      ) : null}
 
       <TeamModal
         mode={teamModal.mode ?? 'view'}

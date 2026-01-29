@@ -57,7 +57,7 @@ const useTaskFormOptions = ({
   const userChoices = userChoicesQuery.data?.results ?? []
 
   useEffect(() => {
-    const teams = teamsQuery.data ?? []
+    const teams = teamsQuery.data?.results ?? []
     if (teams.length === 1) {
       const teamId = String(teams[0].id)
       setCreateForm((current) =>

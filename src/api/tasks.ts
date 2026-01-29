@@ -1,5 +1,5 @@
-import apiClient from '../lib/apiClient'
 import type { Task, TaskStatus } from '../types/api'
+import apiClient from '../lib/apiClient'
 
 export type TaskCreateInput = {
   user?: number
@@ -21,9 +21,24 @@ type PaginatedResponse<T> = {
   results: T[]
 }
 
-export const getTasks = async () => {
-  const { data } = await apiClient.get<PaginatedResponse<Task>>('/tasks/')
-  return data.results
+export type TaskFilters = {
+  page?: number
+  pageSize?: number
+}
+
+export const getTasks = async (filters: TaskFilters = {}) => {
+  const searchParams = new URLSearchParams()
+  if (filters.page) {
+    searchParams.set('page', String(filters.page))
+  }
+  if (filters.pageSize) {
+    searchParams.set('page_size', String(filters.pageSize))
+  }
+  const query = searchParams.toString()
+  const { data } = await apiClient.get<PaginatedResponse<Task>>(
+    `/tasks/${query ? `?${query}` : ''}`,
+  )
+  return data
 }
 
 export const getTask = async (id: number) => {

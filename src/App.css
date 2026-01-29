@@ -278,6 +278,10 @@
   box-shadow: 0 20px 45px -40px rgba(15, 23, 42, 0.8);
 }
 
+.page-card--min {
+  min-height: 460px;
+}
+
 .profile-page {
   display: grid;
   gap: 24px;
@@ -397,6 +401,15 @@
   flex-direction: column;
   gap: 12px;
   align-items: flex-start;
+  margin-top: 12px;
+}
+
+.pagination-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 12px;
 }
 
 .notification-badge {
@@ -810,6 +823,12 @@
     justify-content: space-between;
   }
 
+  .pagination-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .profile-notifications-header {
     flex-direction: row;
     align-items: center;
@@ -840,6 +859,12 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-card--min {
+    min-height: 360px;
   }
 }
 .home-panel {

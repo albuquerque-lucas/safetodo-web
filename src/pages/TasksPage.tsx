@@ -1,4 +1,5 @@
-﻿import NewItemButton from '../components/NewItemButton'
+import NewItemButton from '../components/NewItemButton'
+import PaginationFooter from '../components/PaginationFooter'
 import TaskCreateModal from '../components/modals/TaskCreateModal'
 import TaskModal from '../components/modals/TaskModal'
 import TasksTable from '../components/tasks/TasksTable'
@@ -7,6 +8,8 @@ import useTasksPageController from '../hooks/useTasksPageController'
 
 const TasksPage = () => {
   const {
+    page,
+    setPage,
     tasksQuery,
     taskQuery,
     createForm,
@@ -41,7 +44,7 @@ const TasksPage = () => {
   })
 
   return (
-    <div className="page-card">
+    <div className="page-card page-card--min">
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
         <div>
           <h1 className="h3 mb-1">Tasks</h1>
@@ -51,7 +54,7 @@ const TasksPage = () => {
       </div>
 
       <TasksTable
-        tasks={tasksQuery.data ?? []}
+        tasks={tasksQuery.data?.results ?? []}
         isLoading={tasksQuery.isLoading}
         isError={tasksQuery.isError}
         isDeleting={deleteMutation.isPending}
@@ -59,6 +62,16 @@ const TasksPage = () => {
         onEdit={(id) => openModal(id, 'edit')}
         onDelete={handleDelete}
       />
+
+      {!tasksQuery.isLoading && !tasksQuery.isError ? (
+        <PaginationFooter
+          total={tasksQuery.data?.count ?? 0}
+          hasPrevious={!!tasksQuery.data?.previous}
+          hasNext={!!tasksQuery.data?.next}
+          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
+          onNext={() => setPage((current) => current + 1)}
+        />
+      ) : null}
 
       <TaskModal
         isOpen={taskModal.isOpen}
@@ -70,7 +83,7 @@ const TasksPage = () => {
         setEditForm={setEditForm}
         priorityLevels={priorityLevels}
         isPriorityLoading={priorityLevelsQuery.isLoading}
-        teams={teamsQuery.data ?? []}
+        teams={teamsQuery.data?.results ?? []}
         isTeamsLoading={teamsQuery.isLoading}
         userChoices={userChoices}
         isUserChoicesLoading={userChoicesQuery.isLoading}
@@ -86,7 +99,7 @@ const TasksPage = () => {
         setCreateForm={setCreateForm}
         priorityLevels={priorityLevels}
         isPriorityLoading={priorityLevelsQuery.isLoading}
-        teams={teamsQuery.data ?? []}
+        teams={teamsQuery.data?.results ?? []}
         isTeamsLoading={teamsQuery.isLoading}
         userChoices={userChoices}
         isUserChoicesLoading={userChoicesQuery.isLoading}
@@ -100,4 +113,3 @@ const TasksPage = () => {
 }
 
 export default TasksPage
-

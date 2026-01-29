@@ -16,6 +16,7 @@ import useModalState from './useModalState'
 const useTasksPageController = () => {
   const queryClient = useQueryClient()
   const storedUserId = localStorage.getItem('auth_user_id') ?? ''
+  const [page, setPage] = useState(1)
   const [createForm, setCreateForm] =
     useState<TaskCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TaskEditFormState>(defaultEditForm)
@@ -23,8 +24,8 @@ const useTasksPageController = () => {
   const taskModal = useModalState<'view' | 'edit', number>()
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks', storedUserId],
-    queryFn: getTasks,
+    queryKey: ['tasks', storedUserId, page],
+    queryFn: () => getTasks({ page }),
   })
 
   const taskQuery = useQuery({
@@ -131,6 +132,8 @@ const useTasksPageController = () => {
   }
 
   return {
+    page,
+    setPage,
     tasksQuery,
     taskQuery,
     createForm,
