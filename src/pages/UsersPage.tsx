@@ -8,25 +8,12 @@ import {
   getUsers,
   updateUser,
 } from '../api/users'
-import DataTable from '../components/DataTable'
 import NewItemButton from '../components/NewItemButton'
-import RowActionsMenu from '../components/RowActionsMenu'
 import UserModal from '../components/modals/UserModal'
+import UsersTable from '../components/users/UsersTable'
 import useModalState from '../hooks/useModalState'
+import type { UserCreateFormState, UserEditFormState } from '../types/users'
 import { confirmDeletion } from '../utils/swalMessages'
-
-type UserCreateFormState = {
-  username: string
-  email: string
-  first_name: string
-  last_name: string
-  bio: string
-  phone: string
-  password: string
-  password2: string
-}
-
-type UserEditFormState = Omit<UserCreateFormState, 'password' | 'password2'>
 
 const defaultCreateForm: UserCreateFormState = {
   username: '',
@@ -177,54 +164,15 @@ const UsersPage = () => {
         />
       </div>
 
-      {usersQuery.isLoading ? (
-        <div className="text-muted">Carregando usuarios...</div>
-      ) : usersQuery.isError ? (
-        <div className="text-danger">Erro ao carregar usuarios.</div>
-      ) : (
-        <DataTable
-          columns={[
-            { header: 'ID', render: (user) => user.id },
-            { header: 'Username', render: (user) => user.username },
-            { header: 'Email', render: (user) => user.email },
-            {
-              header: 'Nome',
-              render: (user) =>
-                [user.first_name, user.last_name].filter(Boolean).join(' ') ||
-                '-',
-            },
-            { header: 'Telefone', render: (user) => user.phone || '-' },
-            {
-              header: 'Opcoes',
-              headerClassName: 'text-end',
-              className: 'text-end',
-              render: (user) => (
-                <RowActionsMenu
-                  items={[
-                    {
-                      label: 'Visualizar',
-                      onClick: () => navigate(`/app/users/${user.id}`),
-                    },
-                    {
-                      label: 'Editar',
-                      onClick: () => openEditModal(user.id),
-                    },
-                    {
-                      label: 'Deletar',
-                      onClick: () => handleDelete(user.id),
-                      className: 'dropdown-item text-danger',
-                      disabled: deleteMutation.isPending,
-                    },
-                  ]}
-                />
-              ),
-            },
-          ]}
-          data={usersQuery.data ?? []}
-          emptyMessage="Nenhum usuario encontrado."
-          rowKey={(user) => user.id}
-        />
-      )}
+      <UsersTable
+        users={usersQuery.data ?? []}
+        isLoading={usersQuery.isLoading}
+        isError={usersQuery.isError}
+        isDeleting={deleteMutation.isPending}
+        onView={(id) => navigate(`/app/users/${id}`)}
+        onEdit={openEditModal}
+        onDelete={handleDelete}
+      />
 
       <UserModal
         mode="edit"
@@ -234,88 +182,11 @@ const UsersPage = () => {
         formId="user-edit-form"
         isSaving={updateMutation.isPending}
         saveError={updateMutation.isError}
-      >
-        {userQuery.isLoading ? (
-          <div className="text-muted">Carregando detalhes...</div>
-        ) : userQuery.isError ? (
-          <div className="text-danger">Erro ao carregar usuario.</div>
-        ) : (
-          <div className="row g-3">
-            <div className="col-12 col-md-4">
-              <label className="form-label">Username</label>
-              <input
-                className="form-control"
-                value={editForm.username}
-                onChange={(event) =>
-                  setEditForm({
-                    ...editForm,
-                    username: event.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="col-12 col-md-4">
-              <label className="form-label">Email</label>
-              <input
-                className="form-control"
-                type="email"
-                value={editForm.email}
-                onChange={(event) =>
-                  setEditForm({ ...editForm, email: event.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="col-6 col-md-2">
-              <label className="form-label">Nome</label>
-              <input
-                className="form-control"
-                value={editForm.first_name}
-                onChange={(event) =>
-                  setEditForm({
-                    ...editForm,
-                    first_name: event.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="col-6 col-md-2">
-              <label className="form-label">Sobrenome</label>
-              <input
-                className="form-control"
-                value={editForm.last_name}
-                onChange={(event) =>
-                  setEditForm({
-                    ...editForm,
-                    last_name: event.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="col-12 col-md-6">
-              <label className="form-label">Bio</label>
-              <input
-                className="form-control"
-                value={editForm.bio}
-                onChange={(event) =>
-                  setEditForm({ ...editForm, bio: event.target.value })
-                }
-              />
-            </div>
-            <div className="col-12 col-md-6">
-              <label className="form-label">Telefone</label>
-              <input
-                className="form-control"
-                value={editForm.phone}
-                onChange={(event) =>
-                  setEditForm({ ...editForm, phone: event.target.value })
-                }
-              />
-            </div>
-          </div>
-        )}
-      </UserModal>
+        editForm={editForm}
+        setEditForm={setEditForm}
+        isLoading={userQuery.isLoading}
+        isError={userQuery.isError}
+      />
 
       <UserModal
         mode="create"
@@ -325,112 +196,9 @@ const UsersPage = () => {
         formId="user-create-form"
         isSaving={createMutation.isPending}
         saveError={createMutation.isError}
-      >
-        <div className="row g-3">
-          <div className="col-12 col-md-6">
-            <label className="form-label">Username</label>
-            <input
-              className="form-control"
-              value={createForm.username}
-              onChange={(event) =>
-                setCreateForm({
-                  ...createForm,
-                  username: event.target.value,
-                })
-              }
-              required
-            />
-          </div>
-          <div className="col-12 col-md-6">
-            <label className="form-label">Email</label>
-            <input
-              className="form-control"
-              type="email"
-              value={createForm.email}
-              onChange={(event) =>
-                setCreateForm({ ...createForm, email: event.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="col-6 col-md-3">
-            <label className="form-label">Nome</label>
-            <input
-              className="form-control"
-              value={createForm.first_name}
-              onChange={(event) =>
-                setCreateForm({
-                  ...createForm,
-                  first_name: event.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="col-6 col-md-3">
-            <label className="form-label">Sobrenome</label>
-            <input
-              className="form-control"
-              value={createForm.last_name}
-              onChange={(event) =>
-                setCreateForm({
-                  ...createForm,
-                  last_name: event.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="col-12 col-md-6">
-            <label className="form-label">Bio</label>
-            <input
-              className="form-control"
-              value={createForm.bio}
-              onChange={(event) =>
-                setCreateForm({ ...createForm, bio: event.target.value })
-              }
-            />
-          </div>
-          <div className="col-12 col-md-6">
-            <label className="form-label">Telefone</label>
-            <input
-              className="form-control"
-              value={createForm.phone}
-              onChange={(event) =>
-                setCreateForm({ ...createForm, phone: event.target.value })
-              }
-            />
-          </div>
-          <div className="col-6 col-md-6">
-            <label className="form-label">Senha</label>
-            <input
-              className="form-control"
-              type="password"
-              value={createForm.password}
-              onChange={(event) =>
-                setCreateForm({
-                  ...createForm,
-                  password: event.target.value,
-                })
-              }
-              required
-            />
-          </div>
-          <div className="col-6 col-md-6">
-            <label className="form-label">Confirmar senha</label>
-            <input
-              className="form-control"
-              type="password"
-              value={createForm.password2}
-              onChange={(event) =>
-                setCreateForm({
-                  ...createForm,
-                  password2: event.target.value,
-                })
-              }
-              required
-            />
-          </div>
-        </div>
-      </UserModal>
+        createForm={createForm}
+        setCreateForm={setCreateForm}
+      />
     </div>
   )
 }
