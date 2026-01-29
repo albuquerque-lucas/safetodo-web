@@ -22,6 +22,12 @@ const UserProfilePage = () => {
     notificationPage,
     logPageSize,
     notificationPageSize,
+    logSortBy,
+    logSortDir,
+    toggleLogSort,
+    notificationSortBy,
+    notificationSortDir,
+    toggleNotificationSort,
     logsQuery,
     logsErrorStatus,
     notificationsQuery,
@@ -89,6 +95,9 @@ const UserProfilePage = () => {
               onDeleteLog={handleDeleteLog}
               page={logPage}
               pageSize={logPageSize}
+              sortBy={logSortBy}
+              sortDir={logSortDir}
+              onSort={toggleLogSort}
               total={logsQuery.data?.count ?? 0}
               onPageChange={setLogPage}
               showMutationError={deleteMutation.isError || clearMutation.isError}
@@ -100,6 +109,9 @@ const UserProfilePage = () => {
               isError={notificationsQuery.isError}
               page={notificationPage}
               pageSize={notificationPageSize}
+              sortBy={notificationSortBy}
+              sortDir={notificationSortDir}
+              onSort={toggleNotificationSort}
               total={notificationsQuery.data?.count ?? 0}
               onPageChange={setNotificationPage}
               onMarkAllRead={handleMarkAllRead}

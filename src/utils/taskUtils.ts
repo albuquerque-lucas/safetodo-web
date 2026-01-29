@@ -13,11 +13,11 @@ export const defaultCreateForm: TaskCreateFormState = {
 
 export const defaultEditForm: TaskEditFormState = {
   ...defaultCreateForm,
-  status: 'pending',
+  status: 'created',
 }
 
 export const statusOptions: { value: TaskStatus; label: string }[] = [
-  { value: 'pending', label: STATUS_LABELS.pending },
+  { value: 'created', label: STATUS_LABELS.created },
   { value: 'in_progress', label: STATUS_LABELS.in_progress },
   { value: 'completed', label: STATUS_LABELS.completed },
   { value: 'cancelled', label: STATUS_LABELS.cancelled },

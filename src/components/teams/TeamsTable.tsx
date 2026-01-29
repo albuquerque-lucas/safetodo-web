@@ -10,6 +10,9 @@ type TeamsTableProps = {
   onView: (id: number) => void
   onEdit: (id: number) => void
   onDelete: (id: number) => void
+  sortBy: string
+  sortDir: 'asc' | 'desc'
+  onSort: (key: string) => void
 }
 
 const TeamsTable = ({
@@ -20,6 +23,9 @@ const TeamsTable = ({
   onView,
   onEdit,
   onDelete,
+  sortBy,
+  sortDir,
+  onSort,
 }: TeamsTableProps) => {
   if (isLoading) {
     return <div className="text-muted">Carregando equipes...</div>
@@ -32,8 +38,8 @@ const TeamsTable = ({
   return (
     <DataTable
       columns={[
-        { header: 'ID', render: (team) => team.id },
-        { header: 'Nome', render: (team) => team.name },
+        { header: 'ID', sortKey: 'id', render: (team) => team.id },
+        { header: 'Nome', sortKey: 'name', render: (team) => team.name },
         {
           header: 'Membros',
           render: (team) => team.members_display?.length ?? team.members.length ?? 0,
@@ -71,6 +77,9 @@ const TeamsTable = ({
       data={teams}
       emptyMessage="Nenhuma equipe encontrada."
       rowKey={(team) => team.id}
+      sortBy={sortBy}
+      sortDir={sortDir}
+      onSort={onSort}
     />
   )
 }

@@ -8,6 +8,9 @@ type AuditLogsTableProps = {
   canDeleteItems: boolean
   isDeleting: boolean
   onDeleteLog: (id: number) => void
+  sortBy: string
+  sortDir: 'asc' | 'desc'
+  onSort: (key: string) => void
 }
 
 const AuditLogsTable = ({
@@ -15,16 +18,20 @@ const AuditLogsTable = ({
   canDeleteItems,
   isDeleting,
   onDeleteLog,
+  sortBy,
+  sortDir,
+  onSort,
 }: AuditLogsTableProps) => (
   <DataTable
     columns={[
       {
         header: 'Data/Hora',
+        sortKey: 'timestamp',
         render: (log: AuditLog) => formatDate(log.timestamp),
       },
-      { header: 'Acao', render: (log: AuditLog) => log.action },
-      { header: 'Entidade', render: (log: AuditLog) => log.entity_type },
-      { header: 'ID', render: (log: AuditLog) => log.entity_id || '-' },
+      { header: 'Acao', sortKey: 'action', render: (log: AuditLog) => log.action },
+      { header: 'Entidade', sortKey: 'entity_type', render: (log: AuditLog) => log.entity_type },
+      { header: 'ID', sortKey: 'entity_id', render: (log: AuditLog) => log.entity_id || '-' },
       {
         header: 'Resumo',
         render: (log: AuditLog) => compactMetadata(log.metadata),
@@ -54,6 +61,9 @@ const AuditLogsTable = ({
     data={logs}
     emptyMessage="Nenhum log encontrado."
     rowKey={(log: AuditLog) => log.id}
+    sortBy={sortBy}
+    sortDir={sortDir}
+    onSort={onSort}
   />
 )
 

@@ -34,7 +34,7 @@ const TaskForm = <T extends TaskCreateFormState | TaskEditFormState>({
   formId,
 }: TaskFormProps<T>) => {
   const isEdit = mode === 'edit'
-  const statusValue = isEdit ? (form as TaskEditFormState).status : 'pending'
+  const statusValue = isEdit ? (form as TaskEditFormState).status : 'created'
 
   const updateField = <K extends keyof TaskCreateFormState>(
     key: K,

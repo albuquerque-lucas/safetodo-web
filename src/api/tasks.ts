@@ -24,6 +24,7 @@ type PaginatedResponse<T> = {
 export type TaskFilters = {
   page?: number
   pageSize?: number
+  ordering?: string
 }
 
 export const getTasks = async (filters: TaskFilters = {}) => {
@@ -33,6 +34,9 @@ export const getTasks = async (filters: TaskFilters = {}) => {
   }
   if (filters.pageSize) {
     searchParams.set('page_size', String(filters.pageSize))
+  }
+  if (filters.ordering) {
+    searchParams.set('ordering', filters.ordering)
   }
   const query = searchParams.toString()
   const { data } = await apiClient.get<PaginatedResponse<Task>>(

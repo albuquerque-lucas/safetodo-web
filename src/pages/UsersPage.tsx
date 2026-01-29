@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import {
   createUser,
@@ -13,6 +13,7 @@ import Pagination from '../components/Pagination'
 import UserModal from '../components/modals/UserModal'
 import UsersTable from '../components/users/UsersTable'
 import useModalState from '../hooks/useModalState'
+import useTableSorting from '../hooks/useTableSorting'
 import type { UserCreateFormState, UserEditFormState } from '../types/users'
 import { confirmDeletion } from '../utils/swalMessages'
 
@@ -41,6 +42,9 @@ const UsersPage = () => {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const pageSize = 10
+  const { sortBy, sortDir, ordering, toggleSort } = useTableSorting({
+    defaultSortBy: 'date_joined',
+  })
   const [createForm, setCreateForm] = useState<UserCreateFormState>(
     defaultCreateForm,
   )
@@ -51,8 +55,9 @@ const UsersPage = () => {
   const editModal = useModalState<'edit', number>()
 
   const usersQuery = useQuery({
-    queryKey: ['users', page, pageSize],
-    queryFn: () => getUsers({ page, pageSize }),
+    queryKey: ['users', page, pageSize, ordering],
+    queryFn: () => getUsers({ page, pageSize, ordering }),
+    placeholderData: keepPreviousData,
   })
 
   const userQuery = useQuery({
@@ -74,6 +79,10 @@ const UsersPage = () => {
       })
     }
   }, [editModal.isOpen, userQuery.data])
+
+  useEffect(() => {
+    setPage(1)
+  }, [ordering])
 
   const createMutation = useMutation({
     mutationFn: createUser,
@@ -175,6 +184,9 @@ const UsersPage = () => {
         onView={(id) => navigate(`/app/users/${id}`)}
         onEdit={openEditModal}
         onDelete={handleDelete}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSort={toggleSort}
       />
 
       {!usersQuery.isLoading && !usersQuery.isError ? (

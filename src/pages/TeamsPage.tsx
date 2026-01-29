@@ -11,6 +11,9 @@ const TeamsPage = () => {
     page,
     pageSize,
     setPage,
+    sortBy,
+    sortDir,
+    toggleSort,
     teamsQuery,
     teamQuery,
     teamTasksQuery,
@@ -68,6 +71,9 @@ const TeamsPage = () => {
         onView={(id) => openTeamModal(id, 'view')}
         onEdit={(id) => openTeamModal(id, 'edit')}
         onDelete={handleDelete}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSort={toggleSort}
       />
 
       {!teamsQuery.isLoading && !teamsQuery.isError ? (

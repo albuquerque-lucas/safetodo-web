@@ -1,6 +1,10 @@
 export type Timestamp = string
 
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
+export type TaskStatus =
+  | 'created'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
 
 export type PriorityLevel = {
   id: number

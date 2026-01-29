@@ -16,6 +16,9 @@ type ProfileLogsTabProps = {
   onDeleteLog: (id: number) => void
   page: number
   pageSize: number
+  sortBy: string
+  sortDir: 'asc' | 'desc'
+  onSort: (key: string) => void
   total: number
   onPageChange: (nextPage: number) => void
   showMutationError: boolean
@@ -35,6 +38,9 @@ const ProfileLogsTab = ({
   onDeleteLog,
   page,
   pageSize,
+  sortBy,
+  sortDir,
+  onSort,
   total,
   onPageChange,
   showMutationError,
@@ -72,6 +78,9 @@ const ProfileLogsTab = ({
           canDeleteItems={canDeleteLogs}
           isDeleting={isDeleting}
           onDeleteLog={onDeleteLog}
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSort={onSort}
         />
         <Pagination
           page={page}

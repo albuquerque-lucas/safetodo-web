@@ -5,6 +5,7 @@ type DataTableColumn<T> = {
   headerClassName?: string
   className?: string
   render: (row: T) => React.ReactNode
+  sortKey?: string
 }
 
 type DataTableProps<T> = {
@@ -14,6 +15,9 @@ type DataTableProps<T> = {
   rowKey: (row: T) => React.Key
   tableClassName?: string
   headClassName?: string
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
+  onSort?: (key: string) => void
 }
 
 const DataTable = <T,>({
@@ -23,6 +27,9 @@ const DataTable = <T,>({
   rowKey,
   tableClassName = 'table table-hover align-middle',
   headClassName = 'table-light',
+  sortBy,
+  sortDir,
+  onSort,
 }: DataTableProps<T>) => {
   const hasData = data.length > 0
 
@@ -31,11 +38,29 @@ const DataTable = <T,>({
       <table className={tableClassName}>
         <thead className={headClassName}>
           <tr>
-            {columns.map((column, index) => (
-              <th key={`${column.header}-${index}`} className={column.headerClassName}>
-                {column.header}
-              </th>
-            ))}
+            {columns.map((column, index) => {
+              const isSortable = !!column.sortKey && !!onSort
+              const isActive = isSortable && column.sortKey === sortBy
+              const indicator =
+                isActive && sortDir ? (sortDir === 'asc' ? '↑' : '↓') : ''
+
+              return (
+                <th key={`${column.header}-${index}`} className={column.headerClassName}>
+                  {isSortable ? (
+                    <button
+                      type="button"
+                      className={`table-sort ${isActive ? 'is-active' : ''}`}
+                      onClick={() => onSort?.(column.sortKey as string)}
+                    >
+                      <span>{column.header}</span>
+                      <span className="table-sort-indicator">{indicator}</span>
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </th>
+              )
+            })}
           </tr>
         </thead>
         <tbody>

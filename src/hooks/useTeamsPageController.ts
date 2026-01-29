@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createTeam,
   deleteTeam,
@@ -26,11 +26,15 @@ import {
 } from '../utils/teamUtils'
 import { confirmDeletion } from '../utils/swalMessages'
 import useModalState from './useModalState'
+import useTableSorting from './useTableSorting'
 
 const useTeamsPageController = () => {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const pageSize = 10
+  const { sortBy, sortDir, ordering, toggleSort } = useTableSorting({
+    defaultSortBy: 'created_at',
+  })
   const [createForm, setCreateForm] =
     useState<TeamCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TeamEditFormState>(defaultEditForm)
@@ -47,14 +51,16 @@ const useTeamsPageController = () => {
   const selectedTeamId = teamModal.selectedId
 
   const teamsQuery = useQuery({
-    queryKey: ['teams', page, pageSize],
-    queryFn: () => getTeams({ page, pageSize }),
+    queryKey: ['teams', page, pageSize, ordering],
+    queryFn: () => getTeams({ page, pageSize, ordering }),
+    placeholderData: keepPreviousData,
   })
 
   const teamQuery = useQuery({
     queryKey: ['team', selectedTeamId],
     queryFn: () => getTeam(selectedTeamId as number),
     enabled: selectedTeamId !== null && teamModal.isOpen,
+    placeholderData: keepPreviousData,
   })
 
   const userChoicesQuery = useQuery({
@@ -67,6 +73,7 @@ const useTeamsPageController = () => {
     queryFn: () => getTeamTasks(selectedTeamId as number),
     enabled:
       teamModal.isOpen && teamModal.mode === 'view' && selectedTeamId !== null,
+    placeholderData: keepPreviousData,
   })
 
   const teamUserChoicesQuery = useQuery({
@@ -103,6 +110,10 @@ const useTeamsPageController = () => {
       setSelectedMemberId('')
     }
   }, [createModal.isOpen])
+
+  useEffect(() => {
+    setPage(1)
+  }, [ordering])
 
   useEffect(() => {
     if (teamTaskModal.isOpen && !teamTaskForm.user && teamUserChoices.length > 0) {
@@ -236,6 +247,9 @@ const useTeamsPageController = () => {
     page,
     pageSize,
     setPage,
+    sortBy,
+    sortDir,
+    toggleSort,
     teamsQuery,
     teamQuery,
     teamTasksQuery,

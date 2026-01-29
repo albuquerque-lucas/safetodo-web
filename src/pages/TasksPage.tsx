@@ -11,6 +11,9 @@ const TasksPage = () => {
     page,
     pageSize,
     setPage,
+    sortBy,
+    sortDir,
+    toggleSort,
     tasksQuery,
     taskQuery,
     createForm,
@@ -21,12 +24,14 @@ const TasksPage = () => {
     closeModal,
     createMutation,
     updateMutation,
+    updateStatusMutation,
     deleteMutation,
     createModal,
     taskModal,
     handleCreateSubmit,
     handleEditSubmit,
     handleDelete,
+    handleStatusUpdate,
     enterEditMode,
     cancelEditMode,
   } = useTasksPageController()
@@ -61,8 +66,13 @@ const TasksPage = () => {
         isLoading={tasksQuery.isLoading}
         isError={tasksQuery.isError}
         isDeleting={deleteMutation.isPending}
+        isUpdatingStatus={updateStatusMutation.isPending}
         onView={(id) => openModal(id, 'view')}
         onDelete={handleDelete}
+        onStatusUpdate={handleStatusUpdate}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSort={toggleSort}
       />
 
       {!tasksQuery.isLoading && !tasksQuery.isError ? (

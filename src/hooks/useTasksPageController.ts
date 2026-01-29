@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createTask,
   deleteTask,
@@ -8,16 +8,21 @@ import {
   getTasks,
   updateTask,
 } from '../api/tasks'
+import type { Task } from '../types/api'
 import type { TaskEditFormState, TaskCreateFormState } from '../types/tasks'
 import { confirmDeletion } from '../utils/swalMessages'
 import { defaultCreateForm, defaultEditForm, toIsoOrNull, toNumberOrUndefined } from '../utils/taskUtils'
 import useModalState from './useModalState'
+import useTableSorting from './useTableSorting'
 
 const useTasksPageController = () => {
   const queryClient = useQueryClient()
   const storedUserId = localStorage.getItem('auth_user_id') ?? ''
   const [page, setPage] = useState(1)
   const pageSize = 10
+  const { sortBy, sortDir, ordering, toggleSort } = useTableSorting({
+    defaultSortBy: 'created_at',
+  })
   const [createForm, setCreateForm] =
     useState<TaskCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TaskEditFormState>(defaultEditForm)
@@ -25,14 +30,16 @@ const useTasksPageController = () => {
   const taskModal = useModalState<'view' | 'edit', number>()
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks', storedUserId, page, pageSize],
-    queryFn: () => getTasks({ page, pageSize }),
+    queryKey: ['tasks', storedUserId, page, pageSize, ordering],
+    queryFn: () => getTasks({ page, pageSize, ordering }),
+    placeholderData: keepPreviousData,
   })
 
   const taskQuery = useQuery({
     queryKey: ['task', taskModal.selectedId, storedUserId],
     queryFn: () => getTask(taskModal.selectedId as number),
     enabled: taskModal.selectedId !== null,
+    placeholderData: keepPreviousData,
   })
 
   const setEditFormFromTask = (task: (typeof taskQuery)['data']) => {
@@ -55,6 +62,10 @@ const useTasksPageController = () => {
       setEditFormFromTask(taskQuery.data)
     }
   }, [taskModal.mode, taskQuery.data])
+
+  useEffect(() => {
+    setPage(1)
+  }, [ordering])
 
   const createMutation = useMutation({
     mutationFn: createTask,
@@ -81,6 +92,16 @@ const useTasksPageController = () => {
       }
       queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       taskModal.close()
+    },
+  })
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: Task['status'] }) =>
+      updateTask(id, { status }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['task', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
     },
   })
 
@@ -151,10 +172,17 @@ const useTasksPageController = () => {
     }
   }
 
+  const handleStatusUpdate = async (id: number, status: Task['status']) => {
+    await updateStatusMutation.mutateAsync({ id, status })
+  }
+
   return {
     page,
     pageSize,
     setPage,
+    sortBy,
+    sortDir,
+    toggleSort,
     tasksQuery,
     taskQuery,
     createForm,
@@ -166,11 +194,13 @@ const useTasksPageController = () => {
     createMutation,
     updateMutation,
     deleteMutation,
+    updateStatusMutation,
     createModal,
     taskModal,
     handleCreateSubmit,
     handleEditSubmit,
     handleDelete,
+    handleStatusUpdate,
     enterEditMode,
     cancelEditMode,
   }

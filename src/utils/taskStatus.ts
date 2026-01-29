@@ -1,7 +1,7 @@
 import type { TaskStatus } from '../types/api'
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
-  pending: 'Pendente',
+  created: 'Criada',
   in_progress: 'Em progresso',
   completed: 'Concluida',
   cancelled: 'Cancelada',

@@ -16,6 +16,7 @@ export type NotificationFilters = {
   dateTo?: string
   page?: number
   pageSize?: number
+  ordering?: string
 }
 
 export const getNotifications = async (filters: NotificationFilters = {}) => {
@@ -40,6 +41,9 @@ export const getNotifications = async (filters: NotificationFilters = {}) => {
   }
   if (filters.pageSize) {
     searchParams.set('page_size', String(filters.pageSize))
+  }
+  if (filters.ordering) {
+    searchParams.set('ordering', filters.ordering)
   }
   const query = searchParams.toString()
   const { data } = await apiClient.get<PaginatedResponse<Notification>>(

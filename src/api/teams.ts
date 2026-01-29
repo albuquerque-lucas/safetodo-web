@@ -20,6 +20,7 @@ export type TeamUpdateInput = Partial<TeamCreateInput>
 export type TeamFilters = {
   page?: number
   pageSize?: number
+  ordering?: string
 }
 
 export const getTeams = async (filters: TeamFilters = {}) => {
@@ -29,6 +30,9 @@ export const getTeams = async (filters: TeamFilters = {}) => {
   }
   if (filters.pageSize) {
     searchParams.set('page_size', String(filters.pageSize))
+  }
+  if (filters.ordering) {
+    searchParams.set('ordering', filters.ordering)
   }
   const query = searchParams.toString()
   const { data } = await apiClient.get<PaginatedResponse<Team>>(

@@ -10,6 +10,9 @@ type UsersTableProps = {
   onView: (id: number) => void
   onEdit: (id: number) => void
   onDelete: (id: number) => void
+  sortBy: string
+  sortDir: 'asc' | 'desc'
+  onSort: (key: string) => void
 }
 
 const UsersTable = ({
@@ -20,6 +23,9 @@ const UsersTable = ({
   onView,
   onEdit,
   onDelete,
+  sortBy,
+  sortDir,
+  onSort,
 }: UsersTableProps) => {
   if (isLoading) {
     return <div className="text-muted">Carregando usuarios...</div>
@@ -32,15 +38,16 @@ const UsersTable = ({
   return (
     <DataTable
       columns={[
-        { header: 'ID', render: (user) => user.id },
-        { header: 'Username', render: (user) => user.username },
-        { header: 'Email', render: (user) => user.email },
+        { header: 'ID', sortKey: 'id', render: (user) => user.id },
+        { header: 'Username', sortKey: 'username', render: (user) => user.username },
+        { header: 'Email', sortKey: 'email', render: (user) => user.email },
         {
           header: 'Nome',
+          sortKey: 'first_name',
           render: (user) =>
             [user.first_name, user.last_name].filter(Boolean).join(' ') || '-',
         },
-        { header: 'Telefone', render: (user) => user.phone || '-' },
+        { header: 'Telefone', sortKey: 'phone', render: (user) => user.phone || '-' },
         {
           header: 'Opcoes',
           headerClassName: 'text-end',
@@ -70,6 +77,9 @@ const UsersTable = ({
       data={users}
       emptyMessage="Nenhum usuario encontrado."
       rowKey={(user) => user.id}
+      sortBy={sortBy}
+      sortDir={sortDir}
+      onSort={onSort}
     />
   )
 }

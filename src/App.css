@@ -601,6 +601,13 @@
   gap: 8px;
 }
 
+.task-status-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 .task-status-dot {
   width: 10px;
   height: 10px;
@@ -609,10 +616,11 @@
   box-shadow: 0 0 0 4px rgba(203, 213, 245, 0.3);
 }
 
-.task-status-dot.status-pending {
-  background: #f6c453;
-  box-shadow: 0 0 0 4px rgba(246, 196, 83, 0.28);
+.task-status-dot.status-created {
+  background: #94a3b8;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.28);
 }
+
 
 .task-status-dot.status-in_progress {
   background: #4e8ef7;
@@ -790,6 +798,30 @@
 
 .table-responsive table {
   margin-bottom: 0;
+}
+
+.table-sort {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.table-sort:focus {
+  outline: none;
+}
+
+.table-sort.is-active {
+  color: #111827;
+}
+
+.table-sort-indicator {
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 .row-actions-toggle {

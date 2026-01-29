@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 import { clearAuditLogs, deleteAuditLog, getAuditLogs } from '../api/auditLogs'
 import {
@@ -15,6 +15,7 @@ import useUserProfilePermissions from './useUserProfilePermissions'
 import useUserProfileTabs from './useUserProfileTabs'
 import { confirmDeletion } from '../utils/swalMessages'
 import { getAvatarInitials, getDisplayName } from '../utils/profileUtils'
+import useTableSorting from './useTableSorting'
 
 const useUserProfileController = () => {
   const queryClient = useQueryClient()
@@ -67,6 +68,22 @@ const useUserProfileController = () => {
   const [notificationPage, setNotificationPage] = useState(1)
   const logPageSize = 10
   const notificationPageSize = 10
+  const {
+    sortBy: logSortBy,
+    sortDir: logSortDir,
+    ordering: logOrdering,
+    toggleSort: toggleLogSort,
+  } = useTableSorting({
+    defaultSortBy: 'timestamp',
+  })
+  const {
+    sortBy: notificationSortBy,
+    sortDir: notificationSortDir,
+    ordering: notificationOrdering,
+    toggleSort: toggleNotificationSort,
+  } = useTableSorting({
+    defaultSortBy: 'created_at',
+  })
 
   useEffect(() => {
     setLogPage(1)
@@ -76,12 +93,21 @@ const useUserProfileController = () => {
     setNotificationPage(1)
   }, [profileUserId, activeTab])
 
+  useEffect(() => {
+    setLogPage(1)
+  }, [logOrdering])
+
+  useEffect(() => {
+    setNotificationPage(1)
+  }, [notificationOrdering])
+
   const logsQuery = useQuery({
     queryKey: [
       'audit-logs',
       profileUserId,
       logPage,
       logPageSize,
+      logOrdering,
       permissions.isAdmin,
     ],
     queryFn: () =>
@@ -89,8 +115,10 @@ const useUserProfileController = () => {
         userId: permissions.isAdmin ? profileUserId : undefined,
         page: logPage,
         pageSize: logPageSize,
+        ordering: logOrdering,
       }),
     enabled: permissions.canViewLogsTab && activeTab === 'logs' && !!profileUserId,
+    placeholderData: keepPreviousData,
   })
 
   const logsErrorStatus = (logsQuery.error as { response?: { status?: number } })
@@ -108,6 +136,7 @@ const useUserProfileController = () => {
       profileUserId,
       notificationPage,
       notificationPageSize,
+      notificationOrdering,
       permissions.isAdmin,
     ],
     queryFn: () =>
@@ -115,11 +144,13 @@ const useUserProfileController = () => {
         userId: permissions.isAdmin ? profileUserId : undefined,
         page: notificationPage,
         pageSize: notificationPageSize,
+        ordering: notificationOrdering,
       }),
     enabled:
       permissions.canViewNotificationsTab &&
       activeTab === 'notifications' &&
       !!profileUserId,
+    placeholderData: keepPreviousData,
   })
 
   const unreadCountQuery = useQuery({
@@ -132,6 +163,7 @@ const useUserProfileController = () => {
         pageSize: notificationPageSize,
       }),
     enabled: permissions.canViewNotificationsTab && !!profileUserId,
+    placeholderData: keepPreviousData,
   })
 
   useEffect(() => {
@@ -299,6 +331,12 @@ const useUserProfileController = () => {
     setNotificationPage,
     logPageSize,
     notificationPageSize,
+    logSortBy,
+    logSortDir,
+    toggleLogSort,
+    notificationSortBy,
+    notificationSortDir,
+    toggleNotificationSort,
     logsQuery,
     logsErrorStatus,
     notificationsQuery,

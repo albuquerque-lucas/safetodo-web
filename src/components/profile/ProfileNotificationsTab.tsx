@@ -8,6 +8,9 @@ type ProfileNotificationsTabProps = {
   isError: boolean
   page: number
   pageSize: number
+  sortBy: string
+  sortDir: 'asc' | 'desc'
+  onSort: (key: string) => void
   total: number
   onPageChange: (nextPage: number) => void
   onMarkAllRead: () => void
@@ -31,6 +34,9 @@ const ProfileNotificationsTab = ({
   isError,
   page,
   pageSize,
+  sortBy,
+  sortDir,
+  onSort,
   total,
   onPageChange,
   onMarkAllRead,
@@ -56,6 +62,13 @@ const ProfileNotificationsTab = ({
         </p>
       </div>
       <div className="profile-notifications-actions">
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          onClick={() => onSort('created_at')}
+        >
+          Ordenar {sortBy === 'created_at' ? (sortDir === 'asc' ? '↑' : '↓') : '↓'}
+        </button>
         <button
           type="button"
           className="btn btn-outline-secondary"

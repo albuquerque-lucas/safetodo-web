@@ -31,6 +31,7 @@ type PaginatedResponse<T> = {
 export type UserFilters = {
   page?: number
   pageSize?: number
+  ordering?: string
 }
 
 export const getUsers = async (filters: UserFilters = {}) => {
@@ -40,6 +41,9 @@ export const getUsers = async (filters: UserFilters = {}) => {
   }
   if (filters.pageSize) {
     searchParams.set('page_size', String(filters.pageSize))
+  }
+  if (filters.ordering) {
+    searchParams.set('ordering', filters.ordering)
   }
   const query = searchParams.toString()
   const { data } = await apiClient.get<PaginatedResponse<User>>(
