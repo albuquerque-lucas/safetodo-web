@@ -396,20 +396,48 @@
   gap: 12px;
 }
 
-.profile-logs-footer {
-  display: flex;
-  flex-direction: column;
+.pagination-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   gap: 12px;
-  align-items: flex-start;
   margin-top: 12px;
 }
 
-.pagination-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
-  margin-top: 12px;
+.pagination-container--single {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.pagination-total {
+  justify-self: start;
+}
+
+.pagination-nav {
+  justify-self: center;
+}
+
+.pagination {
+  gap: 6px;
+}
+
+.pagination .page-link {
+  color: #111827;
+}
+
+.pagination .page-link:hover,
+.pagination .page-link:focus {
+  color: #111827;
+}
+
+.pagination .page-item.active .page-link {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+
+.pagination-spacer {
+  justify-self: end;
 }
 
 .notification-badge {
@@ -817,16 +845,8 @@
     justify-content: space-between;
   }
 
-  .profile-logs-footer {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .pagination-footer {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  .pagination-container {
+    margin-top: 16px;
   }
 
   .profile-notifications-header {
@@ -859,6 +879,21 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 576px) {
+  .pagination-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .pagination-total {
+    justify-self: center;
+  }
+
+  .pagination-spacer {
+    display: none;
   }
 }
 

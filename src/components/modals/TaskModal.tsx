@@ -21,6 +21,8 @@ type TaskModalProps = {
   isUserChoicesLoading: boolean
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
   onClose: () => void
+  onEdit: () => void
+  onCancelEdit: () => void
   isSaving: boolean
   saveError: boolean
 }
@@ -41,6 +43,8 @@ const TaskModal = ({
   isUserChoicesLoading,
   onSubmit,
   onClose,
+  onEdit,
+  onCancelEdit,
   isSaving,
   saveError,
 }: TaskModalProps) => (
@@ -54,9 +58,9 @@ const TaskModal = ({
           <button
             type="button"
             className="btn btn-outline-secondary"
-            onClick={onClose}
+            onClick={onCancelEdit}
           >
-            Cancelar
+            Cancelar edicao
           </button>
           <button
             type="submit"
@@ -68,13 +72,23 @@ const TaskModal = ({
           </button>
         </>
       ) : (
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          onClick={onClose}
-        >
-          Fechar
-        </button>
+        <>
+          <button
+            type="button"
+            className="btn btn-dark"
+            onClick={onEdit}
+            disabled={isLoading || !task}
+          >
+            Editar
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={onClose}
+          >
+            Fechar
+          </button>
+        </>
       )
     }
   >

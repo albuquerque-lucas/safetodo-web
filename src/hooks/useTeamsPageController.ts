@@ -30,6 +30,7 @@ import useModalState from './useModalState'
 const useTeamsPageController = () => {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
+  const pageSize = 10
   const [createForm, setCreateForm] =
     useState<TeamCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TeamEditFormState>(defaultEditForm)
@@ -46,8 +47,8 @@ const useTeamsPageController = () => {
   const selectedTeamId = teamModal.selectedId
 
   const teamsQuery = useQuery({
-    queryKey: ['teams', page],
-    queryFn: () => getTeams({ page }),
+    queryKey: ['teams', page, pageSize],
+    queryFn: () => getTeams({ page, pageSize }),
   })
 
   const teamQuery = useQuery({
@@ -233,6 +234,7 @@ const useTeamsPageController = () => {
 
   return {
     page,
+    pageSize,
     setPage,
     teamsQuery,
     teamQuery,

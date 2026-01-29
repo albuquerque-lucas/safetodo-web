@@ -17,6 +17,7 @@ const useTasksPageController = () => {
   const queryClient = useQueryClient()
   const storedUserId = localStorage.getItem('auth_user_id') ?? ''
   const [page, setPage] = useState(1)
+  const pageSize = 10
   const [createForm, setCreateForm] =
     useState<TaskCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TaskEditFormState>(defaultEditForm)
@@ -24,8 +25,8 @@ const useTasksPageController = () => {
   const taskModal = useModalState<'view' | 'edit', number>()
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks', storedUserId, page],
-    queryFn: () => getTasks({ page }),
+    queryKey: ['tasks', storedUserId, page, pageSize],
+    queryFn: () => getTasks({ page, pageSize }),
   })
 
   const taskQuery = useQuery({
@@ -34,18 +35,24 @@ const useTasksPageController = () => {
     enabled: taskModal.selectedId !== null,
   })
 
+  const setEditFormFromTask = (task: (typeof taskQuery)['data']) => {
+    if (!task) {
+      return
+    }
+    setEditForm({
+      title: task.title ?? '',
+      description: task.description ?? '',
+      status: task.status,
+      priority_level: task.priority_level ? String(task.priority_level) : '',
+      due_date: task.due_date ? task.due_date.slice(0, 16) : '',
+      user: String(task.user ?? ''),
+      team: task.team ? String(task.team) : '',
+    })
+  }
+
   useEffect(() => {
     if (taskModal.mode === 'edit' && taskQuery.data) {
-      const task = taskQuery.data
-      setEditForm({
-        title: task.title ?? '',
-        description: task.description ?? '',
-        status: task.status,
-        priority_level: task.priority_level ? String(task.priority_level) : '',
-        due_date: task.due_date ? task.due_date.slice(0, 16) : '',
-        user: String(task.user ?? ''),
-        team: task.team ? String(task.team) : '',
-      })
+      setEditFormFromTask(taskQuery.data)
     }
   }, [taskModal.mode, taskQuery.data])
 
@@ -120,6 +127,19 @@ const useTasksPageController = () => {
     taskModal.open(mode, id)
   }
 
+  const enterEditMode = () => {
+    if (taskModal.selectedId) {
+      taskModal.open('edit', taskModal.selectedId)
+    }
+  }
+
+  const cancelEditMode = () => {
+    setEditFormFromTask(taskQuery.data)
+    if (taskModal.selectedId) {
+      taskModal.open('view', taskModal.selectedId)
+    }
+  }
+
   const closeModal = () => {
     taskModal.close()
   }
@@ -133,6 +153,7 @@ const useTasksPageController = () => {
 
   return {
     page,
+    pageSize,
     setPage,
     tasksQuery,
     taskQuery,
@@ -150,6 +171,8 @@ const useTasksPageController = () => {
     handleCreateSubmit,
     handleEditSubmit,
     handleDelete,
+    enterEditMode,
+    cancelEditMode,
   }
 }
 

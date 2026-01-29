@@ -15,6 +15,7 @@ export type AuditLogFilters = {
   dateFrom?: string
   dateTo?: string
   page?: number
+  pageSize?: number
 }
 
 export const getAuditLogs = async (filters: AuditLogFilters = {}) => {
@@ -36,6 +37,9 @@ export const getAuditLogs = async (filters: AuditLogFilters = {}) => {
   }
   if (filters.page) {
     searchParams.set('page', String(filters.page))
+  }
+  if (filters.pageSize) {
+    searchParams.set('page_size', String(filters.pageSize))
   }
   const query = searchParams.toString()
   const { data } = await apiClient.get<PaginatedResponse<AuditLog>>(

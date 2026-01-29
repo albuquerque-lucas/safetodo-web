@@ -1,6 +1,6 @@
 import type { AuditLog } from '../../types/api'
+import Pagination from '../Pagination'
 import AuditLogsTable from './AuditLogsTable'
-import ProfilePaginationFooter from './ProfilePaginationFooter'
 
 type ProfileLogsTabProps = {
   logs: AuditLog[]
@@ -14,11 +14,10 @@ type ProfileLogsTabProps = {
   canDeleteLogs: boolean
   isDeleting: boolean
   onDeleteLog: (id: number) => void
+  page: number
+  pageSize: number
   total: number
-  hasPrevious: boolean
-  hasNext: boolean
-  onPrevious: () => void
-  onNext: () => void
+  onPageChange: (nextPage: number) => void
   showMutationError: boolean
 }
 
@@ -34,11 +33,10 @@ const ProfileLogsTab = ({
   canDeleteLogs,
   isDeleting,
   onDeleteLog,
+  page,
+  pageSize,
   total,
-  hasPrevious,
-  hasNext,
-  onPrevious,
-  onNext,
+  onPageChange,
   showMutationError,
 }: ProfileLogsTabProps) => (
   <div className="profile-logs" style={{ minHeight: 420 }}>
@@ -75,12 +73,11 @@ const ProfileLogsTab = ({
           isDeleting={isDeleting}
           onDeleteLog={onDeleteLog}
         />
-        <ProfilePaginationFooter
-          total={total}
-          hasPrevious={hasPrevious}
-          hasNext={hasNext}
-          onPrevious={onPrevious}
-          onNext={onNext}
+        <Pagination
+          page={page}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
         />
         {showMutationError ? (
           <div className="text-danger mt-3">

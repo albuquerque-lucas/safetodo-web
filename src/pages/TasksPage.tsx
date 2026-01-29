@@ -1,5 +1,5 @@
 import NewItemButton from '../components/NewItemButton'
-import PaginationFooter from '../components/PaginationFooter'
+import Pagination from '../components/Pagination'
 import TaskCreateModal from '../components/modals/TaskCreateModal'
 import TaskModal from '../components/modals/TaskModal'
 import TasksTable from '../components/tasks/TasksTable'
@@ -9,6 +9,7 @@ import useTasksPageController from '../hooks/useTasksPageController'
 const TasksPage = () => {
   const {
     page,
+    pageSize,
     setPage,
     tasksQuery,
     taskQuery,
@@ -26,6 +27,8 @@ const TasksPage = () => {
     handleCreateSubmit,
     handleEditSubmit,
     handleDelete,
+    enterEditMode,
+    cancelEditMode,
   } = useTasksPageController()
 
   const {
@@ -59,17 +62,15 @@ const TasksPage = () => {
         isError={tasksQuery.isError}
         isDeleting={deleteMutation.isPending}
         onView={(id) => openModal(id, 'view')}
-        onEdit={(id) => openModal(id, 'edit')}
         onDelete={handleDelete}
       />
 
       {!tasksQuery.isLoading && !tasksQuery.isError ? (
-        <PaginationFooter
-          total={tasksQuery.data?.count ?? 0}
-          hasPrevious={!!tasksQuery.data?.previous}
-          hasNext={!!tasksQuery.data?.next}
-          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
-          onNext={() => setPage((current) => current + 1)}
+        <Pagination
+          page={page}
+          totalItems={tasksQuery.data?.count ?? 0}
+          pageSize={pageSize}
+          onPageChange={setPage}
         />
       ) : null}
 
@@ -89,6 +90,8 @@ const TasksPage = () => {
         isUserChoicesLoading={userChoicesQuery.isLoading}
         onSubmit={handleEditSubmit}
         onClose={closeModal}
+        onEdit={enterEditMode}
+        onCancelEdit={cancelEditMode}
         isSaving={updateMutation.isPending}
         saveError={updateMutation.isError}
       />

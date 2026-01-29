@@ -65,6 +65,8 @@ const useUserProfileController = () => {
 
   const [logPage, setLogPage] = useState(1)
   const [notificationPage, setNotificationPage] = useState(1)
+  const logPageSize = 10
+  const notificationPageSize = 10
 
   useEffect(() => {
     setLogPage(1)
@@ -75,11 +77,18 @@ const useUserProfileController = () => {
   }, [profileUserId, activeTab])
 
   const logsQuery = useQuery({
-    queryKey: ['audit-logs', profileUserId, logPage, permissions.isAdmin],
+    queryKey: [
+      'audit-logs',
+      profileUserId,
+      logPage,
+      logPageSize,
+      permissions.isAdmin,
+    ],
     queryFn: () =>
       getAuditLogs({
         userId: permissions.isAdmin ? profileUserId : undefined,
         page: logPage,
+        pageSize: logPageSize,
       }),
     enabled: permissions.canViewLogsTab && activeTab === 'logs' && !!profileUserId,
   })
@@ -98,12 +107,14 @@ const useUserProfileController = () => {
       'notifications',
       profileUserId,
       notificationPage,
+      notificationPageSize,
       permissions.isAdmin,
     ],
     queryFn: () =>
       getNotifications({
         userId: permissions.isAdmin ? profileUserId : undefined,
         page: notificationPage,
+        pageSize: notificationPageSize,
       }),
     enabled:
       permissions.canViewNotificationsTab &&
@@ -118,6 +129,7 @@ const useUserProfileController = () => {
         userId: permissions.isAdmin ? profileUserId : undefined,
         unread: true,
         page: 1,
+        pageSize: notificationPageSize,
       }),
     enabled: permissions.canViewNotificationsTab && !!profileUserId,
   })
@@ -285,6 +297,8 @@ const useUserProfileController = () => {
     setLogPage,
     notificationPage,
     setNotificationPage,
+    logPageSize,
+    notificationPageSize,
     logsQuery,
     logsErrorStatus,
     notificationsQuery,

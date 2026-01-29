@@ -9,7 +9,7 @@ import {
   updateUser,
 } from '../api/users'
 import NewItemButton from '../components/NewItemButton'
-import PaginationFooter from '../components/PaginationFooter'
+import Pagination from '../components/Pagination'
 import UserModal from '../components/modals/UserModal'
 import UsersTable from '../components/users/UsersTable'
 import useModalState from '../hooks/useModalState'
@@ -40,6 +40,7 @@ const UsersPage = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
+  const pageSize = 10
   const [createForm, setCreateForm] = useState<UserCreateFormState>(
     defaultCreateForm,
   )
@@ -50,8 +51,8 @@ const UsersPage = () => {
   const editModal = useModalState<'edit', number>()
 
   const usersQuery = useQuery({
-    queryKey: ['users', page],
-    queryFn: () => getUsers({ page }),
+    queryKey: ['users', page, pageSize],
+    queryFn: () => getUsers({ page, pageSize }),
   })
 
   const userQuery = useQuery({
@@ -177,12 +178,11 @@ const UsersPage = () => {
       />
 
       {!usersQuery.isLoading && !usersQuery.isError ? (
-        <PaginationFooter
-          total={usersQuery.data?.count ?? 0}
-          hasPrevious={!!usersQuery.data?.previous}
-          hasNext={!!usersQuery.data?.next}
-          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
-          onNext={() => setPage((current) => current + 1)}
+        <Pagination
+          page={page}
+          totalItems={usersQuery.data?.count ?? 0}
+          pageSize={pageSize}
+          onPageChange={setPage}
         />
       ) : null}
 

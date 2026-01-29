@@ -1,16 +1,15 @@
 import type { Notification } from '../../types/api'
+import Pagination from '../Pagination'
 import NotificationsList from './NotificationsList'
-import ProfilePaginationFooter from './ProfilePaginationFooter'
 
 type ProfileNotificationsTabProps = {
   notifications: Notification[]
   isLoading: boolean
   isError: boolean
+  page: number
+  pageSize: number
   total: number
-  hasPrevious: boolean
-  hasNext: boolean
-  onPrevious: () => void
-  onNext: () => void
+  onPageChange: (nextPage: number) => void
   onMarkAllRead: () => void
   onClear: () => void
   isMarkingAllRead: boolean
@@ -30,11 +29,10 @@ const ProfileNotificationsTab = ({
   notifications,
   isLoading,
   isError,
+  page,
+  pageSize,
   total,
-  hasPrevious,
-  hasNext,
-  onPrevious,
-  onNext,
+  onPageChange,
   onMarkAllRead,
   onClear,
   isMarkingAllRead,
@@ -94,12 +92,11 @@ const ProfileNotificationsTab = ({
           isMarkingUnread={isMarkingUnread}
           isDeleting={isDeleting}
         />
-        <ProfilePaginationFooter
-          total={total}
-          hasPrevious={hasPrevious}
-          hasNext={hasNext}
-          onPrevious={onPrevious}
-          onNext={onNext}
+        <Pagination
+          page={page}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
         />
         {showMutationError ? (
           <div className="text-danger mt-3">

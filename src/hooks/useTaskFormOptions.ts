@@ -30,7 +30,7 @@ const useTaskFormOptions = ({
 
   const teamsQuery = useQuery({
     queryKey: ['teams'],
-    queryFn: getTeams,
+    queryFn: () => getTeams({ pageSize: 200 }),
   })
 
   const activeTeamId =

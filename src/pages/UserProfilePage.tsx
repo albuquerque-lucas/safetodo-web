@@ -18,6 +18,10 @@ const UserProfilePage = () => {
     setActiveTab,
     setLogPage,
     setNotificationPage,
+    logPage,
+    notificationPage,
+    logPageSize,
+    notificationPageSize,
     logsQuery,
     logsErrorStatus,
     notificationsQuery,
@@ -83,11 +87,10 @@ const UserProfilePage = () => {
               canDeleteLogs={permissions.canDeleteLogsItems}
               isDeleting={deleteMutation.isPending}
               onDeleteLog={handleDeleteLog}
+              page={logPage}
+              pageSize={logPageSize}
               total={logsQuery.data?.count ?? 0}
-              hasPrevious={!!logsQuery.data?.previous}
-              hasNext={!!logsQuery.data?.next}
-              onPrevious={() => setLogPage((page) => Math.max(1, page - 1))}
-              onNext={() => setLogPage((page) => page + 1)}
+              onPageChange={setLogPage}
               showMutationError={deleteMutation.isError || clearMutation.isError}
             />
           ) : (
@@ -95,13 +98,10 @@ const UserProfilePage = () => {
               notifications={notificationsQuery.data?.results ?? []}
               isLoading={notificationsQuery.isLoading}
               isError={notificationsQuery.isError}
+              page={notificationPage}
+              pageSize={notificationPageSize}
               total={notificationsQuery.data?.count ?? 0}
-              hasPrevious={!!notificationsQuery.data?.previous}
-              hasNext={!!notificationsQuery.data?.next}
-              onPrevious={() =>
-                setNotificationPage((page) => Math.max(1, page - 1))
-              }
-              onNext={() => setNotificationPage((page) => page + 1)}
+              onPageChange={setNotificationPage}
               onMarkAllRead={handleMarkAllRead}
               onClear={handleClearNotifications}
               isMarkingAllRead={markAllReadMutation.isPending}

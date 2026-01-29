@@ -10,7 +10,6 @@ type TasksTableProps = {
   isError: boolean
   isDeleting: boolean
   onView: (id: number) => void
-  onEdit: (id: number) => void
   onDelete: (id: number) => void
 }
 
@@ -20,7 +19,6 @@ const TasksTable = ({
   isError,
   isDeleting,
   onView,
-  onEdit,
   onDelete,
 }: TasksTableProps) => {
   if (isLoading) {
@@ -62,10 +60,6 @@ const TasksTable = ({
                 {
                   label: 'Visualizar',
                   onClick: () => onView(task.id),
-                },
-                {
-                  label: 'Editar',
-                  onClick: () => onEdit(task.id),
                 },
                 {
                   label: 'Deletar',

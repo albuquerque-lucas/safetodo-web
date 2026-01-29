@@ -1,5 +1,5 @@
 import NewItemButton from '../components/NewItemButton'
-import PaginationFooter from '../components/PaginationFooter'
+import Pagination from '../components/Pagination'
 import TeamsTable from '../components/teams/TeamsTable'
 import TeamCreateModal from '../components/modals/TeamCreateModal'
 import TeamModal from '../components/modals/TeamModal'
@@ -9,6 +9,7 @@ import useTeamsPageController from '../hooks/useTeamsPageController'
 const TeamsPage = () => {
   const {
     page,
+    pageSize,
     setPage,
     teamsQuery,
     teamQuery,
@@ -70,12 +71,11 @@ const TeamsPage = () => {
       />
 
       {!teamsQuery.isLoading && !teamsQuery.isError ? (
-        <PaginationFooter
-          total={teamsQuery.data?.count ?? 0}
-          hasPrevious={!!teamsQuery.data?.previous}
-          hasNext={!!teamsQuery.data?.next}
-          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
-          onNext={() => setPage((current) => current + 1)}
+        <Pagination
+          page={page}
+          totalItems={teamsQuery.data?.count ?? 0}
+          pageSize={pageSize}
+          onPageChange={setPage}
         />
       ) : null}
 
