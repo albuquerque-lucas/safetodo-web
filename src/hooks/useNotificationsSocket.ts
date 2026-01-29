@@ -124,6 +124,10 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
               queryKey: ['notifications-unread'],
               exact: false,
             })
+            queryClient.invalidateQueries({
+              queryKey: ['notifications', 'unseen'],
+              exact: false,
+            })
           }
         } catch {
           // Ignore malformed payloads

@@ -43,6 +43,13 @@ export const getCurrentUser = async () => {
   return data
 }
 
+export const markNotificationsSeen = async () => {
+  const { data } = await apiClient.post<{ notifications_last_seen_at: string }>(
+    '/users/notifications-seen/',
+  )
+  return data
+}
+
 export const createUser = async (payload: UserCreateInput) => {
   const { data } = await apiClient.post<User>('/users/', payload)
   return data

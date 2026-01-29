@@ -20,6 +20,7 @@ export type User = {
   last_name: string
   bio: string | null
   phone: string | null
+  notifications_last_seen_at?: Timestamp | null
   date_joined?: Timestamp
   last_login?: Timestamp | null
 }
