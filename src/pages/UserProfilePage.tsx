@@ -25,6 +25,9 @@ const UserProfilePage = () => {
     logSortBy,
     logSortDir,
     toggleLogSort,
+    logSearchInput,
+    setLogSearchInput,
+    logSearch,
     notificationSortBy,
     notificationSortDir,
     toggleNotificationSort,
@@ -101,6 +104,10 @@ const UserProfilePage = () => {
               total={logsQuery.data?.count ?? 0}
               onPageChange={setLogPage}
               showMutationError={deleteMutation.isError || clearMutation.isError}
+              searchInput={logSearchInput}
+              onSearchChange={setLogSearchInput}
+              isSearching={logsQuery.isFetching}
+              isSearchActive={!!logSearch}
             />
           ) : (
             <ProfileNotificationsTab

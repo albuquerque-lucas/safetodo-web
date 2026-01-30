@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import NewItemButton from '../components/NewItemButton'
 import Pagination from '../components/Pagination'
 import TeamsTable from '../components/teams/TeamsTable'
@@ -14,6 +16,9 @@ const TeamsPage = () => {
     sortBy,
     sortDir,
     toggleSort,
+    searchInput,
+    setSearchInput,
+    search,
     teamsQuery,
     teamQuery,
     teamTasksQuery,
@@ -57,10 +62,31 @@ const TeamsPage = () => {
           <h1 className="h3 mb-1">Equipes</h1>
           <p className="text-muted mb-0">Gerencie equipes e membros.</p>
         </div>
-        <NewItemButton
-          label="Criar equipe"
-          onClick={() => createModal.open('create')}
-        />
+        <div className="list-toolbar-actions d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
+          <div className="list-toolbar-search input-group">
+            <span className="input-group-text text-muted">
+              <FontAwesomeIcon icon={faMagnifyingGlass} />
+            </span>
+            <input
+              type="search"
+              className="form-control"
+              placeholder="Buscar por ID ou nome da equipe"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              aria-label="Buscar equipes"
+            />
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            {teamsQuery.isFetching && searchInput.trim() ? (
+              <span className="text-muted small">Buscando...</span>
+            ) : null}
+            <NewItemButton
+              label="Criar equipe"
+              onClick={() => createModal.open('create')}
+              className="btn btn-dark text-nowrap flex-shrink-0"
+            />
+          </div>
+        </div>
       </div>
 
       <TeamsTable
@@ -74,6 +100,11 @@ const TeamsPage = () => {
         sortBy={sortBy}
         sortDir={sortDir}
         onSort={toggleSort}
+        emptyMessage={
+          search
+            ? 'Nenhuma equipe encontrada para a busca.'
+            : 'Nenhuma equipe encontrada.'
+        }
       />
 
       {!teamsQuery.isLoading && !teamsQuery.isError ? (

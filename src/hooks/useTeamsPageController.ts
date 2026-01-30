@@ -35,6 +35,8 @@ const useTeamsPageController = () => {
   const { sortBy, sortDir, ordering, toggleSort } = useTableSorting({
     defaultSortBy: 'created_at',
   })
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
   const [createForm, setCreateForm] =
     useState<TeamCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TeamEditFormState>(defaultEditForm)
@@ -51,8 +53,8 @@ const useTeamsPageController = () => {
   const selectedTeamId = teamModal.selectedId
 
   const teamsQuery = useQuery({
-    queryKey: ['teams', page, pageSize, ordering],
-    queryFn: () => getTeams({ page, pageSize, ordering }),
+    queryKey: ['teams', page, pageSize, ordering, search],
+    queryFn: () => getTeams({ page, pageSize, ordering, search }),
     placeholderData: keepPreviousData,
   })
 
@@ -113,7 +115,14 @@ const useTeamsPageController = () => {
 
   useEffect(() => {
     setPage(1)
-  }, [ordering])
+  }, [ordering, search])
+
+  useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setSearch(searchInput.trim())
+    }, 300)
+    return () => window.clearTimeout(handler)
+  }, [searchInput])
 
   useEffect(() => {
     if (teamTaskModal.isOpen && !teamTaskForm.user && teamUserChoices.length > 0) {
@@ -250,6 +259,9 @@ const useTeamsPageController = () => {
     sortBy,
     sortDir,
     toggleSort,
+    searchInput,
+    setSearchInput,
+    search,
     teamsQuery,
     teamQuery,
     teamTasksQuery,

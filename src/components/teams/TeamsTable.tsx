@@ -13,6 +13,7 @@ type TeamsTableProps = {
   sortBy: string
   sortDir: 'asc' | 'desc'
   onSort: (key: string) => void
+  emptyMessage?: string
 }
 
 const TeamsTable = ({
@@ -26,6 +27,7 @@ const TeamsTable = ({
   sortBy,
   sortDir,
   onSort,
+  emptyMessage = 'Nenhuma equipe encontrada.',
 }: TeamsTableProps) => {
   if (isLoading) {
     return <div className="text-muted">Carregando equipes...</div>
@@ -75,7 +77,7 @@ const TeamsTable = ({
         },
       ]}
       data={teams}
-      emptyMessage="Nenhuma equipe encontrada."
+      emptyMessage={emptyMessage}
       rowKey={(team) => team.id}
       sortBy={sortBy}
       sortDir={sortDir}

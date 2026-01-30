@@ -28,6 +28,7 @@ type TasksTableProps = {
   sortBy: string
   sortDir: 'asc' | 'desc'
   onSort: (key: string) => void
+  emptyMessage?: string
 }
 
 const TasksTable = ({
@@ -43,6 +44,7 @@ const TasksTable = ({
   sortBy,
   sortDir,
   onSort,
+  emptyMessage = 'Nenhuma tarefa encontrada.',
 }: TasksTableProps) => {
   const [editingCell, setEditingCell] = useState<{
     taskId: number
@@ -395,7 +397,7 @@ const TasksTable = ({
         },
       ]}
       data={tasks}
-      emptyMessage="Nenhuma tarefa encontrada."
+      emptyMessage={emptyMessage}
       rowKey={(task) => task.id}
       sortBy={sortBy}
       sortDir={sortDir}

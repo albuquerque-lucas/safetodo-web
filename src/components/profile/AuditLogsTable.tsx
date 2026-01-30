@@ -11,6 +11,7 @@ type AuditLogsTableProps = {
   sortBy: string
   sortDir: 'asc' | 'desc'
   onSort: (key: string) => void
+  emptyMessage?: string
 }
 
 const AuditLogsTable = ({
@@ -21,6 +22,7 @@ const AuditLogsTable = ({
   sortBy,
   sortDir,
   onSort,
+  emptyMessage = 'Nenhum log encontrado.',
 }: AuditLogsTableProps) => (
   <DataTable
     columns={[
@@ -59,7 +61,7 @@ const AuditLogsTable = ({
         : []),
     ]}
     data={logs}
-    emptyMessage="Nenhum log encontrado."
+    emptyMessage={emptyMessage}
     rowKey={(log: AuditLog) => log.id}
     sortBy={sortBy}
     sortDir={sortDir}

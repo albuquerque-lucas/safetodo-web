@@ -68,6 +68,8 @@ const useUserProfileController = () => {
   const [notificationPage, setNotificationPage] = useState(1)
   const logPageSize = 10
   const notificationPageSize = 10
+  const [logSearchInput, setLogSearchInput] = useState('')
+  const [logSearch, setLogSearch] = useState('')
   const {
     sortBy: logSortBy,
     sortDir: logSortDir,
@@ -98,6 +100,17 @@ const useUserProfileController = () => {
   }, [logOrdering])
 
   useEffect(() => {
+    setLogPage(1)
+  }, [logSearch])
+
+  useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setLogSearch(logSearchInput.trim())
+    }, 300)
+    return () => window.clearTimeout(handler)
+  }, [logSearchInput])
+
+  useEffect(() => {
     setNotificationPage(1)
   }, [notificationOrdering])
 
@@ -108,6 +121,7 @@ const useUserProfileController = () => {
       logPage,
       logPageSize,
       logOrdering,
+      logSearch,
       permissions.isAdmin,
     ],
     queryFn: () =>
@@ -116,6 +130,7 @@ const useUserProfileController = () => {
         page: logPage,
         pageSize: logPageSize,
         ordering: logOrdering,
+        search: logSearch,
       }),
     enabled: permissions.canViewLogsTab && activeTab === 'logs' && !!profileUserId,
     placeholderData: keepPreviousData,
@@ -123,12 +138,6 @@ const useUserProfileController = () => {
 
   const logsErrorStatus = (logsQuery.error as { response?: { status?: number } })
     ?.response?.status
-
-  useEffect(() => {
-    if (activeTab === 'logs' && permissions.canViewLogsTab && logsQuery.refetch) {
-      logsQuery.refetch()
-    }
-  }, [activeTab, logPage, logsQuery, permissions.canViewLogsTab])
 
   const notificationsQuery = useQuery({
     queryKey: [
@@ -165,21 +174,6 @@ const useUserProfileController = () => {
     enabled: permissions.canViewNotificationsTab && !!profileUserId,
     placeholderData: keepPreviousData,
   })
-
-  useEffect(() => {
-    if (
-      activeTab === 'notifications' &&
-      permissions.canViewNotificationsTab &&
-      notificationsQuery.refetch
-    ) {
-      notificationsQuery.refetch()
-    }
-  }, [
-    activeTab,
-    notificationPage,
-    notificationsQuery,
-    permissions.canViewNotificationsTab,
-  ])
 
   const deleteMutation = useMutation({
     mutationFn: deleteAuditLog,
@@ -331,6 +325,9 @@ const useUserProfileController = () => {
     setNotificationPage,
     logPageSize,
     notificationPageSize,
+    logSearchInput,
+    setLogSearchInput,
+    logSearch,
     logSortBy,
     logSortDir,
     toggleLogSort,

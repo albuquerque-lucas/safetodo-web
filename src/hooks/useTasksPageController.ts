@@ -23,6 +23,8 @@ const useTasksPageController = () => {
   const { sortBy, sortDir, ordering, toggleSort } = useTableSorting({
     defaultSortBy: 'created_at',
   })
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
   const [createForm, setCreateForm] =
     useState<TaskCreateFormState>(defaultCreateForm)
   const [editForm, setEditForm] = useState<TaskEditFormState>(defaultEditForm)
@@ -30,8 +32,8 @@ const useTasksPageController = () => {
   const taskModal = useModalState<'view' | 'edit', number>()
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks', storedUserId, page, pageSize, ordering],
-    queryFn: () => getTasks({ page, pageSize, ordering }),
+    queryKey: ['tasks', storedUserId, page, pageSize, ordering, search],
+    queryFn: () => getTasks({ page, pageSize, ordering, search }),
     placeholderData: keepPreviousData,
   })
 
@@ -65,7 +67,14 @@ const useTasksPageController = () => {
 
   useEffect(() => {
     setPage(1)
-  }, [ordering])
+  }, [ordering, search])
+
+  useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setSearch(searchInput.trim())
+    }, 300)
+    return () => window.clearTimeout(handler)
+  }, [searchInput])
 
   const createMutation = useMutation({
     mutationFn: createTask,
@@ -191,6 +200,9 @@ const useTasksPageController = () => {
     sortBy,
     sortDir,
     toggleSort,
+    searchInput,
+    setSearchInput,
+    search,
     tasksQuery,
     taskQuery,
     createForm,

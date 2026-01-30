@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import NewItemButton from '../components/NewItemButton'
 import Pagination from '../components/Pagination'
 import TaskCreateModal from '../components/modals/TaskCreateModal'
@@ -14,6 +16,9 @@ const TasksPage = () => {
     sortBy,
     sortDir,
     toggleSort,
+    searchInput,
+    setSearchInput,
+    search,
     tasksQuery,
     taskQuery,
     createForm,
@@ -58,7 +63,31 @@ const TasksPage = () => {
           <h1 className="h3 mb-1">Tasks</h1>
           <p className="text-muted mb-0">CRUD simples de tarefas.</p>
         </div>
-        <NewItemButton label="Criar tarefa" onClick={() => createModal.open('create')} />
+        <div className="list-toolbar-actions d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
+          <div className="list-toolbar-search input-group">
+            <span className="input-group-text text-muted">
+              <FontAwesomeIcon icon={faMagnifyingGlass} />
+            </span>
+            <input
+              type="search"
+              className="form-control"
+              placeholder="Buscar por ID, titulo, usuario, equipe"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              aria-label="Buscar tarefas"
+            />
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            {tasksQuery.isFetching && searchInput.trim() ? (
+              <span className="text-muted small">Buscando...</span>
+            ) : null}
+            <NewItemButton
+              label="Criar tarefa"
+              onClick={() => createModal.open('create')}
+              className="btn btn-dark text-nowrap flex-shrink-0"
+            />
+          </div>
+        </div>
       </div>
 
       <TasksTable
@@ -74,6 +103,11 @@ const TasksPage = () => {
         sortBy={sortBy}
         sortDir={sortDir}
         onSort={toggleSort}
+        emptyMessage={
+          search
+            ? 'Nenhuma tarefa encontrada para a busca.'
+            : 'Nenhuma tarefa encontrada.'
+        }
       />
 
       {!tasksQuery.isLoading && !tasksQuery.isError ? (
