@@ -81,7 +81,7 @@ const Sidebar = ({ isOpen, isAdmin }: SidebarProps) => (
             delay: isOpen ? 0.08 : 0,
           }}
         >
-          Tasks
+          Minhas tarefas
         </motion.span>
       </NavLink>
       <NavLink

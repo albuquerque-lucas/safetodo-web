@@ -3,6 +3,7 @@ import AdminPage from './pages/AdminPage'
 import TasksPage from './pages/TasksPage'
 import UsersPage from './pages/UsersPage'
 import UserProfilePage from './pages/UserProfilePage'
+import TeamDetailsPage from './pages/TeamDetailsPage'
 import SidebarLayout from './components/SidebarLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -42,6 +43,7 @@ function App() {
           <Route path="users/:userId" element={<UserProfilePage />} />
           <Route path="profile" element={<UserProfilePage />} />
           <Route path="teams" element={<TeamsPage />} />
+          <Route path="teams/:teamId" element={<TeamDetailsPage />} />
           <Route path="forbidden" element={<ForbiddenPage />} />
           <Route
             path="admin"

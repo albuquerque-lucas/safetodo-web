@@ -8,7 +8,6 @@ type TeamsTableProps = {
   isError: boolean
   isDeleting: boolean
   onView: (id: number) => void
-  onEdit: (id: number) => void
   onDelete: (id: number) => void
   sortBy: string
   sortDir: 'asc' | 'desc'
@@ -22,7 +21,6 @@ const TeamsTable = ({
   isError,
   isDeleting,
   onView,
-  onEdit,
   onDelete,
   sortBy,
   sortDir,
@@ -60,10 +58,6 @@ const TeamsTable = ({
                 {
                   label: 'Visualizar',
                   onClick: () => onView(team.id),
-                },
-                {
-                  label: 'Editar',
-                  onClick: () => onEdit(team.id),
                 },
                 {
                   label: 'Deletar',

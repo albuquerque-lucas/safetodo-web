@@ -34,7 +34,7 @@ const LoginPage = () => {
       localStorage.setItem('auth_role', data.role ?? 'usuario')
       window.dispatchEvent(new Event('auth-token-changed'))
       navigate('/app', { replace: true })
-    } catch (error) {
+    } catch {
       setErrorMessage('Credenciais inválidas. Tente novamente.')
     } finally {
       setIsSubmitting(false)

@@ -49,6 +49,27 @@ export const getTasks = async (filters: TaskFilters = {}) => {
   return data
 }
 
+export const getMyTasks = async (filters: TaskFilters = {}) => {
+  const searchParams = new URLSearchParams()
+  if (filters.page) {
+    searchParams.set('page', String(filters.page))
+  }
+  if (filters.pageSize) {
+    searchParams.set('page_size', String(filters.pageSize))
+  }
+  if (filters.ordering) {
+    searchParams.set('ordering', filters.ordering)
+  }
+  if (filters.search) {
+    searchParams.set('search', filters.search)
+  }
+  const query = searchParams.toString()
+  const { data } = await apiClient.get<PaginatedResponse<Task>>(
+    `/tasks/mine/${query ? `?${query}` : ''}`,
+  )
+  return data
+}
+
 export const getTask = async (id: number) => {
   const { data } = await apiClient.get<Task>(`/tasks/${id}/`)
   return data

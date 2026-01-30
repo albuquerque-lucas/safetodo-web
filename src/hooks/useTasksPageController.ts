@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -5,10 +6,9 @@ import {
   createTask,
   deleteTask,
   getTask,
-  getTasks,
+  getMyTasks,
   updateTask,
 } from '../api/tasks'
-import type { Task } from '../types/api'
 import type { TaskEditFormState, TaskCreateFormState } from '../types/tasks'
 import { confirmDeletion } from '../utils/swalMessages'
 import { defaultCreateForm, defaultEditForm, toIsoOrNull, toNumberOrUndefined } from '../utils/taskUtils'
@@ -32,8 +32,8 @@ const useTasksPageController = () => {
   const taskModal = useModalState<'view' | 'edit', number>()
 
   const tasksQuery = useQuery({
-    queryKey: ['tasks', storedUserId, page, pageSize, ordering, search],
-    queryFn: () => getTasks({ page, pageSize, ordering, search }),
+    queryKey: ['my-tasks', storedUserId, page, pageSize, ordering, search],
+    queryFn: () => getMyTasks({ page, pageSize, ordering, search }),
     placeholderData: keepPreviousData,
   })
 
@@ -79,6 +79,7 @@ const useTasksPageController = () => {
   const createMutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
       setCreateForm(defaultCreateForm)
@@ -95,6 +96,7 @@ const useTasksPageController = () => {
       payload: Parameters<typeof updateTask>[1]
     }) => updateTask(id, payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       if (taskModal.selectedId) {
         queryClient.invalidateQueries({ queryKey: ['task', taskModal.selectedId] })
@@ -113,6 +115,7 @@ const useTasksPageController = () => {
       payload: Parameters<typeof updateTask>[1]
     }) => updateTask(id, payload),
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['my-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['task', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
@@ -122,6 +125,7 @@ const useTasksPageController = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteTask,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['audit-logs'], exact: false })
     },

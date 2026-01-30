@@ -60,8 +60,8 @@ const TasksPage = () => {
     <div className="page-card page-card--min">
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
         <div>
-          <h1 className="h3 mb-1">Tasks</h1>
-          <p className="text-muted mb-0">CRUD simples de tarefas.</p>
+          <h1 className="h3 mb-1">Minhas tarefas</h1>
+          <p className="text-muted mb-0">Acompanhe apenas as tarefas atribuida a voce.</p>
         </div>
         <div className="list-toolbar-actions d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
           <div className="list-toolbar-search input-group">
@@ -71,10 +71,10 @@ const TasksPage = () => {
             <input
               type="search"
               className="form-control"
-              placeholder="Buscar por ID, titulo, usuario, equipe"
+              placeholder="Buscar por ID, titulo, equipe"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              aria-label="Buscar tarefas"
+              aria-label="Buscar minhas tarefas"
             />
           </div>
           <div className="d-flex align-items-center gap-2">
