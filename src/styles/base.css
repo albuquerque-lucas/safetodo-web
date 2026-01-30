@@ -1,0 +1,12 @@
+.nav-tabs .nav-link {
+  color: var(--color-text);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--color-text);
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+  color: var(--color-text);
+}

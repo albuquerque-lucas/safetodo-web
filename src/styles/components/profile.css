@@ -1,0 +1,198 @@
+.profile-page {
+  display: grid;
+  gap: 24px;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin-bottom: 4px;
+}
+
+.profile-body {
+  display: grid;
+  gap: 20px;
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-lg);
+  background: var(--color-accent);
+  color: var(--color-surface);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-chip {
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  color: var(--color-muted-strong);
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.profile-label {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin-bottom: 4px;
+}
+
+.profile-value {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.profile-bio {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.profile-tabs {
+  margin: 0;
+}
+
+.profile-tabs .nav-link {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.profile-tabs .nav-link.active {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.profile-logs {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-logs-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-surface);
+  background: var(--color-danger);
+  line-height: 1;
+}
+
+.profile-notifications {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-notifications-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-notifications-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notification-item {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notification-item.is-unread {
+  border-color: #cbd5f5;
+  background: var(--color-surface-muted);
+  box-shadow: 0 16px 30px -30px rgba(15, 23, 42, 0.4);
+}
+
+.notification-main {
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+
+.notification-meta {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-top: 4px;
+}
+
+.notification-payload {
+  font-size: 0.85rem;
+  color: var(--color-muted-strong);
+  margin-top: 6px;
+}
+
+.notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

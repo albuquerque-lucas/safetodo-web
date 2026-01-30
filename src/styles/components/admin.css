@@ -1,0 +1,28 @@
+.admin-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.admin-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-section {
+  padding: 8px 4px 4px;
+}
+
+.admin-divider {
+  height: 1px;
+  background: var(--color-border-strong);
+  margin: 24px 12px;
+}

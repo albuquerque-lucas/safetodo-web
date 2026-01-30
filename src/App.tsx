@@ -13,7 +13,7 @@ import PublicLayout from './components/PublicLayout'
 import AdminRoute from './components/AdminRoute'
 import ForbiddenPage from './pages/ForbiddenPage'
 import TeamsPage from './pages/TeamsPage'
-import './App.css'
+import './styles/index.css'
 
 function App() {
   return (

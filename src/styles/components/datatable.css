@@ -1,0 +1,132 @@
+.pagination-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pagination-container--single {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.pagination-total {
+  justify-self: start;
+}
+
+.pagination-nav {
+  justify-self: center;
+}
+
+.pagination {
+  gap: 6px;
+}
+
+.pagination .page-link {
+  color: var(--color-text-strong);
+}
+
+.pagination .page-link:hover,
+.pagination .page-link:focus {
+  color: var(--color-text-strong);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.pagination-spacer {
+  justify-self: end;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  overflow-y: visible;
+  max-width: 100%;
+}
+
+.table-responsive table {
+  margin-bottom: 0;
+}
+
+.datatable-table-fixed {
+  table-layout: fixed;
+}
+
+.datatable-sortable-header {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.datatable-sortable-header:focus {
+  outline: none;
+}
+
+.datatable-sortable-header:hover {
+  color: var(--color-text);
+}
+
+.datatable-sortable-header.is-active {
+  color: var(--color-text-strong);
+}
+
+.datatable-sort-icon {
+  font-size: 1rem;
+  line-height: 1;
+  color: #6c757d;
+  opacity: 0.45;
+  transition: opacity 0.18s ease;
+}
+
+.datatable-sortable-header:hover .datatable-sort-icon {
+  opacity: 0.65;
+}
+
+.datatable-sortable-header.is-active .datatable-sort-icon {
+  opacity: 0.85;
+}
+
+.datatable-cell-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-responsive .table th,
+.table-responsive .table td {
+  white-space: nowrap;
+}
+
+.datatable-scroll-wrapper {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.datatable-scroll-wrapper .table {
+  width: 100%;
+  min-width: 960px;
+}
+
+.row-actions-toggle {
+  border: none;
+  padding: 4px 6px;
+  line-height: 1;
+}
+
+.row-actions-toggle:hover,
+.row-actions-toggle:focus {
+  background-color: rgba(15, 23, 42, 0.08);
+}
