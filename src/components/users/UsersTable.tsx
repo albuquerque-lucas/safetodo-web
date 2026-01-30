@@ -13,6 +13,7 @@ type UsersTableProps = {
   sortBy: string
   sortDir: 'asc' | 'desc'
   onSort: (key: string) => void
+  emptyMessage?: string
 }
 
 const UsersTable = ({
@@ -26,6 +27,7 @@ const UsersTable = ({
   sortBy,
   sortDir,
   onSort,
+  emptyMessage = 'Nenhum usuario encontrado.',
 }: UsersTableProps) => {
   if (isLoading) {
     return <div className="text-muted">Carregando usuarios...</div>
@@ -75,7 +77,7 @@ const UsersTable = ({
         },
       ]}
       data={users}
-      emptyMessage="Nenhum usuario encontrado."
+      emptyMessage={emptyMessage}
       rowKey={(user) => user.id}
       sortBy={sortBy}
       sortDir={sortDir}

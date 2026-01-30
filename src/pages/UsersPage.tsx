@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import {
   createUser,
   deleteUser,
@@ -45,6 +47,8 @@ const UsersPage = () => {
   const { sortBy, sortDir, ordering, toggleSort } = useTableSorting({
     defaultSortBy: 'date_joined',
   })
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
   const [createForm, setCreateForm] = useState<UserCreateFormState>(
     defaultCreateForm,
   )
@@ -55,8 +59,8 @@ const UsersPage = () => {
   const editModal = useModalState<'edit', number>()
 
   const usersQuery = useQuery({
-    queryKey: ['users', page, pageSize, ordering],
-    queryFn: () => getUsers({ page, pageSize, ordering }),
+    queryKey: ['users', page, pageSize, ordering, search],
+    queryFn: () => getUsers({ page, pageSize, ordering, search }),
     placeholderData: keepPreviousData,
   })
 
@@ -81,8 +85,16 @@ const UsersPage = () => {
   }, [editModal.isOpen, userQuery.data])
 
   useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setSearch(searchInput.trim())
+    }, 300)
+    return () => window.clearTimeout(handler)
+  }, [searchInput])
+
+  useEffect(() => {
     setPage(1)
-  }, [ordering])
+  }, [ordering, search])
+
 
   const createMutation = useMutation({
     mutationFn: createUser,
@@ -170,10 +182,31 @@ const UsersPage = () => {
           <h1 className="h3 mb-1">Usuarios</h1>
           <p className="text-muted mb-0">CRUD simples de usuarios.</p>
         </div>
-        <NewItemButton
-          label="Criar usuario"
-          onClick={() => createModal.open('create')}
-        />
+        <div className="list-toolbar-actions d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
+          <div className="list-toolbar-search input-group">
+            <span className="input-group-text text-muted">
+              <FontAwesomeIcon icon={faMagnifyingGlass} />
+            </span>
+            <input
+              type="search"
+              className="form-control"
+              placeholder="Buscar por ID, username, email, nome"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              aria-label="Buscar usuarios"
+            />
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            {usersQuery.isFetching && searchInput.trim() ? (
+              <span className="text-muted small">Buscando...</span>
+            ) : null}
+            <NewItemButton
+              label="Criar usuario"
+              onClick={() => createModal.open('create')}
+              className="btn btn-dark text-nowrap flex-shrink-0"
+            />
+          </div>
+        </div>
       </div>
 
       <UsersTable
@@ -187,6 +220,11 @@ const UsersPage = () => {
         sortBy={sortBy}
         sortDir={sortDir}
         onSort={toggleSort}
+        emptyMessage={
+          search
+            ? 'Nenhum usuario encontrado para o filtro.'
+            : 'Nenhum usuario encontrado.'
+        }
       />
 
       {!usersQuery.isLoading && !usersQuery.isError ? (

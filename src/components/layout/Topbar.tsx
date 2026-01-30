@@ -13,7 +13,8 @@ type TopbarProps = {
 
 const Topbar = ({ title, isSidebarOpen, onToggleSidebar }: TopbarProps) => {
   const handleLogout = useLogout()
-  const isAdmin = localStorage.getItem('auth_role') === 'super_admin'
+  const role = localStorage.getItem('auth_role')
+  const isAdmin = role === 'super_admin' || role === 'company_admin'
   const viewerId = Number(localStorage.getItem('auth_user_id') ?? '')
   const viewerIdParam = Number.isNaN(viewerId) ? undefined : viewerId
 

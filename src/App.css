@@ -915,6 +915,17 @@
   margin: 24px 12px;
 }
 
+.list-toolbar-search {
+  width: 100%;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.list-toolbar-actions {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
 @media (min-width: 768px) {
   .profile-header {
     flex-direction: row;
@@ -962,6 +973,18 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
+  }
+
+  .list-toolbar-search {
+    width: auto;
+    min-width: 580px;
+    max-width: 680px;
+    flex: 0 1 620px;
+  }
+
+  .list-toolbar-actions {
+    width: auto;
+    flex-wrap: nowrap;
   }
 }
 

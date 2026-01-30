@@ -13,7 +13,7 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/login" replace />
   }
 
-  if (role !== 'super_admin') {
+  if (role !== 'super_admin' && role !== 'company_admin') {
     return <Navigate to="/app/forbidden" replace />
   }
 

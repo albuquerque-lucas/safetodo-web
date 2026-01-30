@@ -95,9 +95,14 @@ const useTasksPageController = () => {
     },
   })
 
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: Task['status'] }) =>
-      updateTask(id, { status }),
+  const updateInlineMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number
+      payload: Parameters<typeof updateTask>[1]
+    }) => updateTask(id, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['task', variables.id] })
@@ -172,8 +177,11 @@ const useTasksPageController = () => {
     }
   }
 
-  const handleStatusUpdate = async (id: number, status: Task['status']) => {
-    await updateStatusMutation.mutateAsync({ id, status })
+  const handleInlineUpdate = async (
+    id: number,
+    payload: Parameters<typeof updateTask>[1],
+  ) => {
+    await updateInlineMutation.mutateAsync({ id, payload })
   }
 
   return {
@@ -194,13 +202,13 @@ const useTasksPageController = () => {
     createMutation,
     updateMutation,
     deleteMutation,
-    updateStatusMutation,
+    updateInlineMutation,
     createModal,
     taskModal,
     handleCreateSubmit,
     handleEditSubmit,
     handleDelete,
-    handleStatusUpdate,
+    handleInlineUpdate,
     enterEditMode,
     cancelEditMode,
   }

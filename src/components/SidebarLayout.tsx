@@ -11,7 +11,8 @@ type SidebarLayoutProps = {
 
 const SidebarLayout = ({ title, children }: SidebarLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const isAdmin = localStorage.getItem('auth_role') === 'super_admin'
+  const role = localStorage.getItem('auth_role')
+  const isAdmin = role === 'super_admin' || role === 'company_admin'
 
   return (
     <>

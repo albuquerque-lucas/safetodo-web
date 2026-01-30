@@ -7,6 +7,7 @@ type LoginResponse = {
   refresh: string
   username: string
   user_id: number
+  role?: 'super_admin' | 'company_admin' | 'usuario'
 }
 
 const LoginPage = () => {
@@ -30,10 +31,7 @@ const LoginPage = () => {
       localStorage.setItem('refresh_token', data.refresh)
       localStorage.setItem('auth_username', data.username)
       localStorage.setItem('auth_user_id', String(data.user_id))
-      localStorage.setItem(
-        'auth_role',
-        data.username === 'admin' ? 'super_admin' : 'usuario'
-      )
+      localStorage.setItem('auth_role', data.role ?? 'usuario')
       window.dispatchEvent(new Event('auth-token-changed'))
       navigate('/app', { replace: true })
     } catch (error) {
