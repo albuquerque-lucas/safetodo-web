@@ -84,6 +84,16 @@
   box-shadow: 0 0 0 4px rgba(240, 112, 112, 0.28);
 }
 
+.task-status-dot.status-online {
+  background: #3ccf8e;
+  box-shadow: 0 0 0 4px rgba(60, 207, 142, 0.26);
+}
+
+.task-status-dot.status-offline {
+  background: #94a3b8;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.28);
+}
+
 .task-status-overdue {
   margin-left: 6px;
   padding: 2px 8px;

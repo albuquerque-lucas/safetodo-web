@@ -29,7 +29,7 @@ const TeamDetailsPage = () => {
   const [taskSearch, setTaskSearch] = useState('')
   const [selectedMemberId, setSelectedMemberId] = useState('')
   const [pendingMembers, setPendingMembers] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; isManager: boolean }[]
   >([])
 
   const {
@@ -107,8 +107,8 @@ const TeamDetailsPage = () => {
   })
 
   const addMembersMutation = useMutation({
-    mutationFn: (memberIds: number[]) =>
-      updateTeam(parsedTeamId, { members: memberIds }),
+    mutationFn: (payload: { members: number[]; managers: number[] }) =>
+      updateTeam(parsedTeamId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team', parsedTeamId] })
       queryClient.invalidateQueries({ queryKey: ['team-members', parsedTeamId] })
@@ -143,6 +143,16 @@ const TeamDetailsPage = () => {
       return teamQuery.data.members_display.map((member) => member.id)
     }
     return teamQuery.data.members ?? []
+  }, [teamQuery.data])
+
+  const existingManagerIds = useMemo(() => {
+    if (!teamQuery.data) {
+      return []
+    }
+    if (teamQuery.data.managers_display?.length) {
+      return teamQuery.data.managers_display.map((manager) => manager.id)
+    }
+    return teamQuery.data.managers ?? []
   }, [teamQuery.data])
 
   const availableChoices = useMemo(() => {
@@ -268,14 +278,23 @@ const TeamDetailsPage = () => {
                 onSubmit={(event) => {
                   event.preventDefault()
                   if (!teamQuery.data) return
-                  const merged = Array.from(
+                  const mergedMembers = Array.from(
                     new Set([
                       ...existingMemberIds,
                       ...pendingMembers.map((member) => member.id),
                     ]),
                   )
-                  if (merged.length === 0) return
-                  addMembersMutation.mutate(merged)
+                  if (mergedMembers.length === 0) return
+                  const managerIdsFromPending = pendingMembers
+                    .filter((member) => member.isManager)
+                    .map((member) => member.id)
+                  const mergedManagers = Array.from(
+                    new Set([...existingManagerIds, ...managerIdsFromPending]),
+                  ).filter((id) => mergedMembers.includes(id))
+                  addMembersMutation.mutate({
+                    members: mergedMembers,
+                    managers: mergedManagers,
+                  })
                 }}
               />
             </>

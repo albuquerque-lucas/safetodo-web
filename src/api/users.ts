@@ -56,6 +56,11 @@ export const getUsers = async (filters: UserFilters = {}) => {
   return data
 }
 
+export const getUsersPresence = async () => {
+  const { data } = await apiClient.get<User[]>('/users/presence/')
+  return data
+}
+
 export const getUser = async (id: number) => {
   const { data } = await apiClient.get<User>(`/users/${id}/`)
   return data

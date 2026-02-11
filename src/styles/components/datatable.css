@@ -130,3 +130,24 @@
 .row-actions-toggle:focus {
   background-color: rgba(15, 23, 42, 0.08);
 }
+
+.table-row-pending-remove {
+  background: rgba(240, 112, 112, 0.08);
+  transition: background-color 0.2s ease;
+}
+
+.table-row-pending-remove .table-row-remove-hint {
+  position: relative;
+  color: transparent;
+}
+
+.table-row-pending-remove .table-row-remove-hint::after {
+  content: 'Clique novamente para remover';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.72rem;
+  color: var(--color-muted-strong);
+  white-space: nowrap;
+}

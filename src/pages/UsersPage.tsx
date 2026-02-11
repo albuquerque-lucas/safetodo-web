@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 /* eslint-disable react-hooks/set-state-in-effect */
@@ -9,6 +9,7 @@ import {
   deleteUser,
   getUser,
   getUsers,
+  getUsersPresence,
   updateUser,
 } from '../api/users'
 import NewItemButton from '../components/NewItemButton'
@@ -65,6 +66,12 @@ const UsersPage = () => {
     placeholderData: keepPreviousData,
   })
 
+  const presenceQuery = useQuery({
+    queryKey: ['users-presence'],
+    queryFn: getUsersPresence,
+    enabled: usersQuery.isSuccess,
+  })
+
   const userQuery = useQuery({
     queryKey: ['user', editModal.selectedId],
     queryFn: () => getUser(editModal.selectedId as number),
@@ -96,6 +103,21 @@ const UsersPage = () => {
     setPage(1)
   }, [ordering, search])
 
+  const usersWithPresence = useMemo(() => {
+    const presenceList = presenceQuery.data ?? []
+    const presenceMap = new Map(presenceList.map((item) => [item.id, item]))
+    return (usersQuery.data?.results ?? []).map((user) => {
+      const presence = presenceMap.get(user.id)
+      if (!presence) {
+        return user
+      }
+      return {
+        ...user,
+        is_online: presence.is_online,
+        last_seen_at: presence.last_seen_at,
+      }
+    })
+  }, [presenceQuery.data, usersQuery.data?.results])
 
   const createMutation = useMutation({
     mutationFn: createUser,
@@ -211,7 +233,7 @@ const UsersPage = () => {
       </div>
 
       <UsersTable
-        users={usersQuery.data?.results ?? []}
+        users={usersWithPresence}
         isLoading={usersQuery.isLoading}
         isError={usersQuery.isError}
         isDeleting={deleteMutation.isPending}

@@ -51,6 +51,22 @@ const UsersTable = ({
         },
         { header: 'Telefone', sortKey: 'phone', render: (user) => user.phone || '-' },
         {
+          header: 'Status',
+          render: (user) => {
+            const isOnline = user.is_online === true
+            return (
+              <span className="task-status">
+                <span
+                  className={`task-status-dot ${
+                    isOnline ? 'status-online' : 'status-offline'
+                  }`}
+                />
+                {isOnline ? 'Online' : 'Offline'}
+              </span>
+            )
+          },
+        },
+        {
           header: 'Opcoes',
           headerClassName: 'text-end',
           className: 'text-end',

@@ -9,6 +9,7 @@ type UseNotificationsSocketOptions = {
 
 const BACKOFF_DELAYS = [1000, 2000, 5000, 10000]
 const DEBUG_WS = true
+const HEARTBEAT_INTERVAL_MS = 30000
 
 const buildSocketUrl = (token?: string | null) => {
   const apiBaseUrl =
@@ -41,6 +42,7 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
   const connectionIdRef = useRef(0)
   const socketIdRef = useRef<number | null>(null)
   const connectTimerRef = useRef<number | null>(null)
+  const heartbeatTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!enabled) {
@@ -57,6 +59,10 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
         }
         socketRef.current.close()
         socketRef.current = null
+      }
+      if (heartbeatTimerRef.current) {
+        window.clearInterval(heartbeatTimerRef.current)
+        heartbeatTimerRef.current = null
       }
       return
     }
@@ -110,6 +116,16 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
           // eslint-disable-next-line no-console
           console.debug('[WS notif]', connectionId, 'open')
         }
+        if (heartbeatTimerRef.current) {
+          window.clearInterval(heartbeatTimerRef.current)
+        }
+        const sendHeartbeat = () => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ event: 'presence.heartbeat' }))
+          }
+        }
+        sendHeartbeat()
+        heartbeatTimerRef.current = window.setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS)
       }
 
       ws.onmessage = (event) => {
@@ -128,6 +144,24 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
               queryKey: ['notifications', 'unseen'],
               exact: false,
             })
+            return
+          }
+          if (payload?.event === 'user_online' || payload?.event === 'user_offline') {
+            const userId = payload?.user_id
+            queryClient.setQueryData(['users-presence'], (prev) => {
+              if (!Array.isArray(prev) || typeof userId !== 'number') {
+                return prev
+              }
+              return prev.map((item) =>
+                item && item.id === userId
+                  ? {
+                      ...item,
+                      is_online: payload?.is_online === true,
+                      last_seen_at: payload?.last_seen_at ?? item.last_seen_at,
+                    }
+                  : item,
+              )
+            })
           }
         } catch {
           // Ignore malformed payloads
@@ -140,6 +174,10 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
           socketIdRef.current = null
         }
         isConnectingRef.current = false
+        if (heartbeatTimerRef.current) {
+          window.clearInterval(heartbeatTimerRef.current)
+          heartbeatTimerRef.current = null
+        }
         if (DEBUG_WS) {
           // eslint-disable-next-line no-console
           console.debug(
@@ -193,6 +231,10 @@ const useNotificationsSocket = ({ enabled, token }: UseNotificationsSocketOption
       if (connectTimerRef.current) {
         window.clearTimeout(connectTimerRef.current)
         connectTimerRef.current = null
+      }
+      if (heartbeatTimerRef.current) {
+        window.clearInterval(heartbeatTimerRef.current)
+        heartbeatTimerRef.current = null
       }
       const socket = socketRef.current
       const shouldCloseSocket =

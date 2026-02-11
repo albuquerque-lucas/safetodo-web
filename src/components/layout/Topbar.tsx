@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
 import useLogout from '../../hooks/useLogout'
 import useNotificationsMenu from '../../hooks/useNotificationsMenu'
 import NotificationsMenu from './NotificationsMenu'
+import { getCurrentUser } from '../../api/users'
+import { getAvatarInitials, getDisplayName } from '../../utils/profileUtils'
 
 type TopbarProps = {
   title: string
@@ -12,6 +15,7 @@ type TopbarProps = {
 }
 
 const Topbar = ({ title, isSidebarOpen, onToggleSidebar }: TopbarProps) => {
+  const location = useLocation()
   const handleLogout = useLogout()
   const role = localStorage.getItem('auth_role')
   const isAdmin = role === 'super_admin' || role === 'company_admin'
@@ -22,6 +26,16 @@ const Topbar = ({ title, isSidebarOpen, onToggleSidebar }: TopbarProps) => {
     isAdmin,
     viewerId: viewerIdParam,
   })
+
+  const currentUserQuery = useQuery({
+    queryKey: ['current-user'],
+    queryFn: getCurrentUser,
+  })
+
+  const currentUser = currentUserQuery.data
+  const displayName = currentUser ? getDisplayName(currentUser) : ''
+  const avatarInitials = currentUser ? getAvatarInitials(currentUser, displayName) : ''
+  const isProfilePage = location.pathname === '/app/profile'
 
   const toggleNotifications = () => {
     notificationsMenu.setIsOpen((open) => !open)
@@ -45,6 +59,21 @@ const Topbar = ({ title, isSidebarOpen, onToggleSidebar }: TopbarProps) => {
         {title}
       </Link>
       <div className="topbar-actions">
+        <Link
+          to="/app/profile"
+          className="topbar-avatar-button"
+          aria-label="Ir para perfil"
+          title="Perfil"
+        >
+          <span
+            className={`topbar-avatar ${
+              isProfilePage ? 'topbar-avatar--active' : 'topbar-avatar--inactive'
+            }`}
+            aria-hidden="true"
+          >
+            {avatarInitials || 'U'}
+          </span>
+        </Link>
         <NotificationsMenu
           isOpen={notificationsMenu.isOpen}
           onToggle={toggleNotifications}

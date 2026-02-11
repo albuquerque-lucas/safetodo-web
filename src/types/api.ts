@@ -25,6 +25,8 @@ export type User = {
   bio: string | null
   phone: string | null
   notifications_last_seen_at?: Timestamp | null
+  last_seen_at?: Timestamp | null
+  is_online?: boolean
   date_joined?: Timestamp
   last_login?: Timestamp | null
 }
